@@ -1,5 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#ffffff"/>
-  <rect x="6" y="6" width="500" height="500" rx="106" fill="none" stroke="#e8e8ea" stroke-width="12"/>
-  <text x="256" y="372" text-anchor="middle" font-family="'Noto Serif Devanagari','Kohinoor Devanagari',serif" font-size="280" font-weight="800" fill="#1d1d1f">श</text>
+  <rect width="512" height="512" rx="112" fill="#f3f7fa"/>
+  <g transform="translate(96 70) scale(5)" fill="none" stroke="#b0852f" stroke-width="1.8" stroke-linecap="round">
+    <path d="M4 30C14 18 30 8 60 4M10 30.5C22 24 38 16 58 11M16 31.2C28 27 42 22 55 18M22 32C33 30 44 27 52 25M4 30 22 32"/>
+  </g>
+  <text x="256" y="440" text-anchor="middle" font-family="'Noto Serif Devanagari','Kohinoor Devanagari',serif" font-size="230" font-weight="800" fill="#24323f">श</text>
 </svg>

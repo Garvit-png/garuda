@@ -1,9 +1,20 @@
 // "Share as image": draws a 1080×1350 word card (Instagram/WhatsApp portrait size)
 // on a canvas. For a publisher, every shared card is free, branded reach.
 
-const INK = '#1d1d1f';
-const MUTED = '#6e6e73';
-const LINE = '#e8e8ea';
+const INK = '#24323f';
+const MUTED = '#687886';
+const LINE = '#e6ecf1';
+const GOLD = '#b0852f';
+// Garuda wing brand mark (same five lines as the app, viewBox 64×36)
+const WING = new Path2D('M4 30C14 18 30 8 60 4M10 30.5C22 24 38 16 58 11M16 31.2C28 27 42 22 55 18M22 32C33 30 44 27 52 25M4 30 22 32');
+function drawWing(ctx, x, y, scale, alpha = 1, px = 3) {
+  ctx.save();
+  ctx.translate(x, y); ctx.scale(scale, scale);
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle = GOLD; ctx.lineWidth = px / scale; ctx.lineCap = 'round';
+  ctx.stroke(WING);
+  ctx.restore();
+}
 const SERIF_DEVA = "'Noto Serif Devanagari', 'Kohinoor Devanagari', serif";
 const DEVA = "'Kohinoor Devanagari', 'Noto Sans Devanagari', 'Nirmala UI', 'Mangal', sans-serif";
 const LATIN = "-apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
@@ -33,12 +44,14 @@ export async function makeCard(entry, url = '') {
 
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, W, H);
+  drawWing(ctx, W - 600, 120, 9, 0.22, 4);  // large faint wing behind the headword, top right
 
-  // Brand
+  // Brand: wing mark + शब्दकोश
+  drawWing(ctx, X, 118, 1.6);
   ctx.fillStyle = INK;
   ctx.font = `800 56px ${SERIF_DEVA}`;
   ctx.textBaseline = 'alphabetic';
-  ctx.fillText('शब्दकोश', X, 170);
+  ctx.fillText('शब्दकोश', X + 122, 170);
 
   // Headword (shrinks to fit long words)
   let size = 220;
@@ -82,8 +95,10 @@ export async function makeCard(entry, url = '') {
 
   // Footer
 
+  ctx.fillStyle = GOLD;
+  ctx.fillRect(X, H - 150, 120, 3);
   ctx.fillStyle = LINE;
-  ctx.fillRect(X, H - 150, MAX, 2);
+  ctx.fillRect(X + 120, H - 149, MAX - 120, 1);
   ctx.font = `500 34px ${LATIN}`;
   ctx.fillStyle = INK;
   ctx.fillText('Garuda Prakashan', X, H - 80);

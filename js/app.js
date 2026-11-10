@@ -46,6 +46,8 @@ const icon = {
   share: svg('<path d="M12 3.5v11M8 7.5l4-4 4 4"/><path d="M7 11H6a1.5 1.5 0 0 0-1.5 1.5v6.5A1.5 1.5 0 0 0 6 20.5h12a1.5 1.5 0 0 0 1.5-1.5v-6.5A1.5 1.5 0 0 0 18 11h-1"/>'),
   speaker: svg('<path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z" fill="currentColor"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>'),
 };
+// Garuda's wing, drawn as five lines: the brand mark
+const WING = '<path d="M4 30C14 18 30 8 60 4"/><path d="M10 30.5C22 24 38 16 58 11"/><path d="M16 31.2C28 27 42 22 55 18"/><path d="M22 32C33 30 44 27 52 25"/><path d="M4 30 22 32"/>';
 const GENDER = { 'f.': 'feminine', 'm.': 'masculine' };
 const posText = (pos) => {
   const m = pos.match(/^(\S+)\s*\((.+)\)$/);
@@ -66,6 +68,24 @@ const row = (e) => `<li><a class="row" href="#/word/${e.id}">
 const rows = (list) => `<ul class="rows">${list.map(row).join('')}</ul>`;
 const section = (title, right = '') => `<div class="section"><h2>${title}</h2>${right}</div>`;
 
+// ---------- आज का शब्द: one word a day, the same for everyone on that date ----------
+function wordOfTheDay(date = new Date()) {
+  const day = Math.floor(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 864e5);
+  // step through the list by a prime so neighbouring days don't give neighbouring words
+  return sorted[(day * 37) % sorted.length];
+}
+function todayCard() {
+  const e = wordOfTheDay();
+  const date = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long' });
+  return `<a class="today" href="#/word/${e.id}">
+    <svg class="wing-bg" viewBox="0 0 64 36" aria-hidden="true">${WING}</svg>
+    <p class="kicker"><span lang="hi">आज का शब्द</span><span class="date">${date}</span></p>
+    <span class="hw" lang="hi">${esc(e.headword)}</span>
+    <p class="tr">${esc(e.transliteration)}</p>
+    <p class="mean">${esc(e.meanings.join(', '))}</p>
+  </a>`;
+}
+
 // ---------- Home: recent words, then every word with a letter sidebar ----------
 function renderHome() {
   const recent = store.get(RECENT).map((id) => byId.get(id)).filter(Boolean);
@@ -77,6 +97,7 @@ function renderHome() {
   }
 
   view.innerHTML = `<div class="wrap">
+    ${todayCard()}
     ${recent.length ? section('Recent', '<button class="link-btn" id="clear-recent">Clear</button>') + `<ul class="chips">${
       recent.map((e) => `<li><a href="#/word/${e.id}" lang="hi">${esc(e.headword)}</a></li>`).join('')}</ul>` : ''}
     ${section('All words', `<span class="meta">${entries.length}</span>`)}

@@ -4,7 +4,7 @@ Record on your phone (screen recording), or in Chrome DevTools with device mode 
 
 | Time | Do | Say |
 |---|---|---|
-| 0:00 | Home screen | "This is a dictionary app prototype for Garuda. Most people type Hindi words in Roman letters, so search works in both scripts." |
+| 0:00 | Home screen: point at the wing mark and आज का शब्द | "This is a dictionary app prototype for Garuda. The mark is a line-drawn Garuda wing, and every day the home screen shows a new word. Most people type Hindi words in Roman letters, so search works in both scripts." |
 | 0:15 | Type `धर्म`, then clear and type `dharma`, then `dharm`, then `dharam` | "Devanagari and three Roman spellings all land on the same entry. `dharam` isn't in the variant list. It matches because every spelling is reduced to a phonetic key." |
 | 0:40 | Type `शान्ति` (with the half न्) | "The data spells it शांति with an anusvara, and many people type the half-n. Generic string matching misses this, and we handle it." |
 | 0:55 | Type `jnaan`, then `gyan` | "ज्ञ is said 'gy' in Hindi, so both IAST-style and spoken spellings work." |
