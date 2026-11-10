@@ -3,58 +3,42 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>शब्दकोश, Garuda Prakashan</title>
+  <title>शब्दकोश · Garuda Prakashan</title>
   <meta name="description" content="Hindi–English dictionary by Garuda Prakashan. Search in Devanagari, Roman spelling or English, or paste a sentence. Works offline.">
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#0d1310" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#0c1310" media="(prefers-color-scheme: dark)">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="शब्दकोश">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+Devanagari:wght@600;800&family=Noto+Serif:wght@700;800&display=swap">
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body data-tab="search">
-  <header class="top">
+<body>
+  <header class="bar">
     <div class="wrap">
-      <h1 class="title" id="title" lang="hi">शब्दकोश</h1>
-      <p class="subtitle" id="subtitle">Hindi–English dictionary by Garuda Prakashan</p>
-    </div>
-  </header>
-
-  <div class="search-bar">
-    <form class="search wrap" role="search" id="search-form">
-      <label for="q" class="sr-only">Search the dictionary</label>
-      <div class="field">
+      <a class="logo" href="#/" aria-label="Shabdkosh, home">
+        <span class="logo-hi" lang="hi">शब्दकोश</span>
+        <span class="logo-rule" aria-hidden="true"></span>
+        <span class="logo-en">Garuda Prakashan</span>
+      </a>
+      <form class="search" role="search" id="search-form">
+        <label for="q" class="sr-only">Search the dictionary</label>
         <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
-        <input id="q" type="search" name="q" placeholder="Hindi, Roman or English"
+        <input id="q" type="search" name="q" placeholder="Search a word or paste a sentence"
                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
                enterkeyhint="search" aria-controls="view">
         <button type="button" id="clear" class="clear" aria-label="Clear search" hidden>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7 7 17"/></svg>
         </button>
-      </div>
-      <button type="button" id="cancel" class="cancel" hidden>Cancel</button>
-    </form>
-  </div>
+      </form>
+    </div>
+  </header>
 
-  <p id="offline" class="offline" hidden>Offline. Search still works.</p>
+  <p id="offline" class="offline" hidden>You're offline. Search still works.</p>
 
   <main id="view" class="wrap" tabindex="-1"></main>
-
-  <nav class="tabs" aria-label="Sections">
-    <a href="#/" data-tab="search">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>Search</a>
-    <a href="#/browse" data-tab="browse">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 5.5A1.5 1.5 0 0 1 6 4h4.5a1.5 1.5 0 0 1 1.5 1.5V20a1.5 1.5 0 0 0-1.5-1.5h-6zM19.5 5.5A1.5 1.5 0 0 0 18 4h-4.5A1.5 1.5 0 0 0 12 5.5V20a1.5 1.5 0 0 1 1.5-1.5h6z"/></svg>Browse</a>
-    <a href="#/saved" data-tab="saved">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>Saved</a>
-  </nav>
 
   <script type="module" src="js/app.js"></script>
 </body>

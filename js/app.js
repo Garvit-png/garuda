@@ -1,19 +1,14 @@
 import { buildIndex, search, findWords, isSentence } from './search.js';
 
-const $ = (id) => document.getElementById(id);
-const view = $('view');
-const input = $('q');
-const clearBtn = $('clear');
-const cancelBtn = $('cancel');
-const offlineNote = $('offline');
-const titleEl = $('title');
-const subtitleEl = $('subtitle');
+const view = document.getElementById('view');
+const input = document.getElementById('q');
+const clearBtn = document.getElementById('clear');
+const offlineNote = document.getElementById('offline');
 
 let entries = [];
 let index = [];
 let byId = new Map();
-let sorted = [];
-let backTo = { hash: '#/', label: 'Search' };   // where a word page's Back goes
+let lastSearch = '';
 
 // ---------- device storage (optional: app works without it) ----------
 const store = {
@@ -22,7 +17,7 @@ const store = {
 };
 const RECENT = 'garuda.recent';
 const SAVED = 'garuda.saved';
-const pushRecent = (id) => store.set(RECENT, [id, ...store.get(RECENT).filter((x) => x !== id)].slice(0, 8));
+const pushRecent = (id) => store.set(RECENT, [id, ...store.get(RECENT).filter((x) => x !== id)].slice(0, 5));
 const isSaved = (id) => store.get(SAVED).includes(id);
 const toggleSaved = (id) => {
   const saved = store.get(SAVED);
@@ -35,20 +30,11 @@ const toggleSaved = (id) => {
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const icon = {
   back: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>',
-  chev: '<svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>',
   star: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>',
-  starBig: '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>',
-  search: '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>',
-  speak: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z" fill="currentColor"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>',
-  share: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v11M8 7.5l4-4 4 4"/><path d="M7 11H6a1.5 1.5 0 0 0-1.5 1.5v6.5A1.5 1.5 0 0 0 6 20.5h12a1.5 1.5 0 0 0 1.5-1.5v-6.5A1.5 1.5 0 0 0 18 11h-1"/></svg>',
+  speak: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>',
+  share: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M8 8l4-4 4 4"/><path d="M6 12v6.5A1.5 1.5 0 0 0 7.5 20h9a1.5 1.5 0 0 0 1.5-1.5V12"/></svg>',
 };
-const head = (text, count, action = '') => `<div class="section-head"><h2 class="heading">${text}${
-  count ? `<span class="count">${count}</span>` : ''}</h2>${action}</div>`;
-const GENDER = { 'f.': 'feminine', 'm.': 'masculine' };
-const posParts = (pos) => {
-  const m = pos.match(/^(\S+)\s*\((.+)\)$/);
-  return m ? [m[1], GENDER[m[2]] ?? m[2]] : [pos];
-};
+const label = (hi, en) => `<p class="label"><span lang="hi">${hi}</span>${en}</p>`;
 
 function toast(msg) {
   document.querySelector('.toast')?.remove();
@@ -57,156 +43,46 @@ function toast(msg) {
   setTimeout(() => t.remove(), 1800);
 }
 
-const row = (e) => `<li><a class="row" href="#/word/${e.id}"><span class="row-main">
+const row = (e) => `<li><a class="row" href="#/word/${e.id}">
   <span class="row-top"><span class="hw" lang="hi">${esc(e.headword)}</span><span class="tr">${esc(e.transliteration)}</span></span>
-  <span class="gloss">${esc(e.meanings.join(', '))}</span></span>${icon.chev}</a></li>`;
+  <span class="gloss">${esc(e.meanings.join('; '))}</span></a></li>`;
 const rows = (list) => `<ul class="rows">${list.map(row).join('')}</ul>`;
-const chips = (list) => `<ul class="chips">${list.map((e) =>
-  `<li><a href="#/word/${e.id}" lang="hi">${esc(e.headword)}</a></li>`).join('')}</ul>`;
 
-// ---------- chrome: which tab, which title ----------
-const TITLES = {
-  search: ['शब्दकोश', 'Hindi–English dictionary by Garuda Prakashan', 'hi'],
-  browse: ['Browse', '', 'en'],
-  saved: ['Saved', 'Words you starred, kept on this phone', 'en'],
-};
-function setTab(tab) {
-  document.body.dataset.tab = tab;
-  document.body.classList.toggle('reading', tab === 'word');
-  for (const a of document.querySelectorAll('.tabs a')) {
-    if (a.dataset.tab === tab) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
-  }
-  const t = TITLES[tab];
-  if (t) {
-    titleEl.textContent = t[0];
-    titleEl.lang = t[2];
-    subtitleEl.textContent = tab === 'browse' ? `All ${entries.length} words, in Hindi alphabetical order` : t[1];
-  }
-}
-
-// Focus or a query folds the big title away and shows Cancel.
-function setSearching() {
-  const on = !!input.value || document.activeElement === input;
-  document.body.classList.toggle('searching', on);
-  cancelBtn.hidden = !on;
-  clearBtn.hidden = !input.value;
-}
-
-// ---------- Search tab, empty: recent words + ways to search ----------
-const WAYS = [
-  ['धर्म', 'Hindi script'],
-  ['dharm', 'Roman, any spelling'],
-  ['peace', 'English meaning'],
-  ['Gyaan aur vidya sabse bada dhan hai', 'A whole sentence'],
-];
+// ---------- home: recent, saved, then the whole dictionary by letter ----------
 function renderHome() {
   const recent = store.get(RECENT).map((id) => byId.get(id)).filter(Boolean);
-  view.innerHTML = `
-    ${recent.length ? head('Recent', 0, '<button class="text-btn" id="clear-recent">Clear</button>') + chips(recent) : ''}
-    ${head('Ways to search')}
-    <ul class="ways">${WAYS.map(([q, what]) => `<li><button type="button" data-q="${esc(q)}">
-      <span class="ex"${/[ऀ-ॿ]/.test(q) ? ' lang="hi"' : ''}>${esc(q)}</span><span class="what">${what}</span></button></li>`).join('')}</ul>
-    ${head('Start browsing', 0, `<a class="text-btn" href="#/browse">All ${entries.length} words</a>`)}
-    ${rows(sorted.slice(0, 5))}`;
-
-  view.querySelector('.ways').addEventListener('click', (ev) => {
-    const q = ev.target.closest('button')?.dataset.q;
-    if (!q) return;
-    input.value = q;
-    input.dispatchEvent(new Event('input'));
-  });
-  $('clear-recent')?.addEventListener('click', () => { store.set(RECENT, []); renderHome(); });
-}
-
-// ---------- Browse tab: letters in a sidebar, words on the right ----------
-// As you scroll, the letter whose words are on screen lights up in the sidebar.
-let stopSpy = () => {};
-function renderBrowse() {
+  const saved = store.get(SAVED).map((id) => byId.get(id)).filter(Boolean);
+  const all = [...entries].sort((a, b) => a.headword.localeCompare(b.headword, 'hi'));
   const groups = new Map();
-  for (const e of sorted) {
+  for (const e of all) {
     const letter = [...e.headword.normalize('NFC')][0];
     if (!groups.has(letter)) groups.set(letter, []);
     groups.get(letter).push(e);
   }
-  view.innerHTML = `<div class="browse">
-    <nav class="side" aria-label="Jump to letter">${[...groups.keys()].map((l) =>
-      `<button type="button" data-letter="${l}" lang="hi" aria-label="Words starting with ${l}">${l}</button>`).join('')}</nav>
-    <div class="words">${[...groups].map(([l, list]) =>
-      `<h2 class="group-head" id="letter-${l}" data-letter="${l}" lang="hi">${l}<span class="count">${list.length}</span></h2>${rows(list)}`).join('')}</div>
-  </div>`;
+  view.innerHTML = `
+    <p class="hint">Type in Hindi or English letters (<b lang="hi">धर्म</b>, <b>dharm</b>), an English word (<b>duty</b>), or paste a whole sentence.</p>
+    ${recent.length ? label('हाल ही में', 'Recent') + rows(recent) : ''}
+    ${saved.length ? label('सहेजे गए', 'Saved') + rows(saved) : ''}
+    ${label('वर्णमाला', `All ${entries.length} words`)}
+    <nav class="letters" aria-label="Jump to letter">${[...groups.keys()].map((l) =>
+      `<button type="button" data-letter="${l}" lang="hi">${l}</button>`).join('')}</nav>
+    ${[...groups].map(([l, list]) => `<h3 class="group-head" id="letter-${l}" lang="hi">${l}</h3>${rows(list)}`).join('')}`;
 
-  const side = view.querySelector('.side');
-  const heads = [...view.querySelectorAll('.group-head')];
-  let current = null;
-  let pinned = null;   // a tapped letter stays lit until the user scrolls by hand
-
-  const setActive = (letter) => {
-    if (letter === current) return;
-    current = letter;
-    for (const b of side.children) {
-      const on = b.dataset.letter === letter;
-      if (on) {
-        b.setAttribute('aria-current', 'true');
-        // keep the lit letter inside the sidebar's own scroll area
-        const top = b.offsetTop - side.offsetTop;
-        if (top < side.scrollTop + 8) side.scrollTop = top - 8;
-        else if (top + b.offsetHeight > side.scrollTop + side.clientHeight - 8) side.scrollTop = top + b.offsetHeight - side.clientHeight + 8;
-      } else b.removeAttribute('aria-current');
-    }
-  };
-  const spy = () => {
-    if (pinned) return setActive(pinned);
-    const line = document.querySelector('.search-bar').getBoundingClientRect().bottom + 24;
-    let cur = heads[0];
-    for (const h of heads) { if (h.getBoundingClientRect().top <= line) cur = h; else break; }
-    if (innerHeight + scrollY >= document.documentElement.scrollHeight - 4) cur = heads.at(-1);
-    setActive(cur.dataset.letter);
-  };
-  let raf = 0;
-  const onScroll = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(spy); };
-  const unpin = () => { pinned = null; };
-  addEventListener('scroll', onScroll, { passive: true });
-  addEventListener('wheel', unpin, { passive: true });
-  addEventListener('touchmove', unpin, { passive: true });
-  addEventListener('keydown', unpin);
-  stopSpy = () => {
-    removeEventListener('scroll', onScroll);
-    removeEventListener('wheel', unpin);
-    removeEventListener('touchmove', unpin);
-    removeEventListener('keydown', unpin);
-  };
-
-  side.addEventListener('click', (ev) => {
-    const b = ev.target.closest('button');
-    if (!b) return;
-    pinned = b.dataset.letter;
-    setActive(pinned);
-    $(`letter-${pinned}`)?.scrollIntoView({ behavior: 'smooth' });
+  view.querySelector('.letters').addEventListener('click', (ev) => {
+    const l = ev.target.closest('button')?.dataset.letter;
+    if (l) document.getElementById(`letter-${l}`)?.scrollIntoView({ behavior: 'smooth' });
   });
-  // the sidebar scrolling itself shouldn't count as a hand scroll of the list
-  side.addEventListener('touchmove', (ev) => ev.stopPropagation(), { passive: true });
-  side.addEventListener('wheel', (ev) => ev.stopPropagation(), { passive: true });
-  spy();
 }
 
-// ---------- Saved tab ----------
-function renderSaved() {
-  const saved = store.get(SAVED).map((id) => byId.get(id)).filter(Boolean);
-  view.innerHTML = saved.length
-    ? head('Starred words', saved.length) + rows(saved)
-    : `<div class="empty">${icon.starBig}<p class="big">No saved words yet</p>
-       <p class="sub">Tap the star on any word to keep it here.</p><p class="sub"><a href="#/browse">Browse all words</a></p></div>`;
-}
-
-// ---------- search results ----------
+// ---------- sentence lookup: tap any known word in pasted text ----------
 function renderSentence(text) {
   const parts = findWords(index, text);
   const known = [...new Map(parts.filter((p) => p.entry).map((p) => [p.entry.id, p.entry])).values()];
   if (!known.length) return false;
   view.innerHTML = `
-    ${head('In your sentence', known.length)}
+    ${label('वाक्य', 'Your sentence')}
     <p class="sentence" lang="hi">${parts.map((p) => (p.entry ? `<a href="#/word/${p.entry.id}">${esc(p.text)}</a>` : esc(p.text))).join('')}</p>
-    <p class="status">Tap a highlighted word, or pick one below.</p>
+    <p class="status">${known.length === 1 ? '1 word' : `${known.length} words`} from the dictionary. Tap to open.</p>
     ${rows(known)}`;
   return true;
 }
@@ -221,86 +97,64 @@ function renderSearch(query) {
   const qs = esc(res.query);
 
   if (!results.length && !meaningResults.length) {
-    view.innerHTML = `<div class="empty">${icon.search}
-      <p class="big">No results for “${qs}”</p>
+    view.innerHTML = `<div class="empty">
+      <p>No results for “${qs}”.</p>
       <p class="sub">Check the spelling, or try the word in Hindi or English.</p>
-      ${suggestions.length ? `<p class="sub">Did you mean ${suggestions.map((s) =>
+      ${suggestions.length ? `<p class="sub inline-links">Did you mean ${suggestions.map((s) =>
         `<a href="#/word/${s.entry.id}"><span lang="hi">${esc(s.entry.headword)}</span> (${esc(s.entry.romanised[0])})</a>`).join(', ')}?</p>` : ''}
-      <p class="sub"><a href="#/browse">Browse all words</a></p>
     </div>`;
     return;
   }
 
   let html = '';
   if (results.length) {
-    const fuzzy = results.every((r) => r.kind === 'fuzzy');
-    html += head(fuzzy ? `Closest to “${qs}”` : 'Words', results.length);
-    if (fuzzy) html += '<p class="status">No exact match. These sound similar.</p>';
+    if (results.every((r) => r.kind === 'fuzzy')) html += `<p class="status">No exact match. Showing the closest words to <b>${qs}</b>.</p>`;
     html += rows(results.map((r) => r.entry));
   }
   if (meaningResults.length) {
-    html += head(results.length ? 'In meanings' : `Hindi for “${qs}”`, meaningResults.length) + rows(meaningResults.map((r) => r.entry));
+    html += label('अर्थ में', results.length ? 'Also in meanings' : `Hindi for “${qs}”`) + rows(meaningResults.map((r) => r.entry));
   }
   view.innerHTML = html;
 }
 
-// ---------- word page ----------
-function exampleHtml(e) {
-  // the headword in bold; any other dictionary word in the sentence is a link
-  return findWords(index, e.example).map((p) => {
-    if (p.entry?.id === e.id || p.text === e.headword) return `<b>${esc(p.text)}</b>`;
-    if (p.entry) return `<a href="#/word/${p.entry.id}">${esc(p.text)}</a>`;
-    return esc(p.text);
-  }).join('');
-}
-
+// ---------- entry ----------
 function renderEntry(id) {
   const e = byId.get(id);
   if (!e) {
-    view.innerHTML = `<div class="empty"><p class="big">This word isn't in the dictionary</p><p class="sub"><a href="#/">Back to search</a></p></div>`;
+    view.innerHTML = `<div class="empty"><p>This word isn't in the dictionary.</p><p class="sub inline-links"><a href="#/">Back to search</a></p></div>`;
     return;
   }
   pushRecent(id);
-  document.title = `${e.headword}, शब्दकोश`;
+  document.title = `${e.headword} · शब्दकोश`;
+  const example = esc(e.example).replace(esc(e.headword), `<b>${esc(e.headword)}</b>`);
   const saved = isSaved(id);
-  const canSpeak = 'speechSynthesis' in window;
-  const i = sorted.indexOf(e);
-  const nearby = sorted.slice(Math.max(0, i - 2), i + 3).filter((x) => x !== e).slice(0, 4);
   view.innerHTML = `
-    <nav class="nav">
-      <a class="back" href="${esc(backTo.hash)}">${icon.back}${backTo.label}</a>
-      <div class="nav-actions">
-        <button id="save" aria-pressed="${saved}" aria-label="${saved ? 'Remove from saved' : 'Save word'}">${icon.star}</button>
-        <button id="share" aria-label="Share as image">${icon.share}</button>
-      </div>
-    </nav>
+    <a class="back" href="${lastSearch ? `#/q/${encodeURIComponent(lastSearch)}` : '#/'}">${icon.back}Back</a>
     <article class="entry">
-      <div class="word-band">
+      <div class="entry-top">
         <h1 lang="hi">${esc(e.headword)}</h1>
-        <button class="say" id="speak" ${canSpeak ? 'aria-label="Listen"' : 'disabled'}>/${esc(e.transliteration)}/ ${canSpeak ? icon.speak : ''}</button>
-        <div><span class="pos">${posParts(e.pos).map((p) => `<span>${esc(p)}</span>`).join('')}</span></div>
+        <p class="tr">${esc(e.transliteration)} · <i>${esc(e.pos)}</i></p>
+        <div class="tools">
+          ${'speechSynthesis' in window ? `<button class="icon-btn" id="speak">${icon.speak}Listen</button>` : ''}
+          <button class="icon-btn" id="save" aria-pressed="${saved}">${icon.star}<span>${saved ? 'Saved' : 'Save'}</span></button>
+          <button class="icon-btn" id="share">${icon.share}Share</button>
+        </div>
       </div>
-
-      ${head('Meanings', e.meanings.length)}
+      ${label('अर्थ', 'Meaning')}
       <ol class="senses">${e.meanings.map((m) => `<li>${esc(m)}</li>`).join('')}</ol>
-
-      ${head('Example')}
-      <p class="example" lang="hi">${exampleHtml(e)}</p>
-
-      <div class="cols">
-        <div>${head('Spellings', e.romanised.length)}<ul>${e.romanised.map((r) => `<li>${esc(r)}</li>`).join('')}</ul></div>
-        <div>${head('Nearby')}<ul class="linked">${nearby.map((n) =>
-          `<li><a href="#/word/${n.id}" lang="hi">${esc(n.headword)}</a></li>`).join('')}</ul></div>
-      </div>
+      ${label('उदाहरण', 'Example')}
+      <p class="ex" lang="hi">${example}</p>
+      ${label('वर्तनी', 'Also written as')}
+      <p class="alt">${e.romanised.map(esc).join(', ')}</p>
     </article>`;
 
-  $('save').onclick = (ev) => {
+  document.getElementById('save').onclick = (ev) => {
     const now = toggleSaved(id);
     ev.currentTarget.setAttribute('aria-pressed', now);
-    ev.currentTarget.setAttribute('aria-label', now ? 'Remove from saved' : 'Save word');
-    toast(now ? 'Saved' : 'Removed from saved');
+    ev.currentTarget.querySelector('span').textContent = now ? 'Saved' : 'Save';
+    toast(now ? 'Saved on this phone' : 'Removed');
   };
-  if (canSpeak) $('speak').addEventListener('click', () => {
+  document.getElementById('speak')?.addEventListener('click', () => {
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(e.headword);
     u.lang = 'hi-IN';
@@ -308,7 +162,7 @@ function renderEntry(id) {
     if (voice) u.voice = voice;
     speechSynthesis.speak(u);
   });
-  $('share').onclick = () => shareWord(e);
+  document.getElementById('share').onclick = () => shareWord(e);
 }
 
 // Share as an image card (WhatsApp / Instagram ready), falling back to a link.
@@ -335,51 +189,41 @@ async function shareWord(e) {
   }
 }
 
-// ---------- routing: #/  #/q/<query>  #/browse  #/saved  #/word/<id> ----------
+// ---------- routing: #/  ·  #/q/<query>  ·  #/word/<id> ----------
 function route() {
   let hash = location.hash.slice(1) || '/';
   try { hash = decodeURIComponent(hash); } catch { /* malformed escape: use as-is */ }
   const [, kind, ...rest] = hash.split('/');
   const arg = rest.join('/');
-  document.title = 'शब्दकोश, Garuda Prakashan';
-  stopSpy();
-  stopSpy = () => {};
+  document.title = 'शब्दकोश · Garuda Prakashan';
 
   if (kind === 'word') {
-    setTab('word');
     renderEntry(Number(arg));
+  } else if (kind === 'q') {
+    lastSearch = arg;
+    if (input.value !== arg) input.value = arg;
+    renderSearch(arg);
   } else {
-    const tab = kind === 'browse' || kind === 'saved' ? kind : 'search';
-    const q = kind === 'q' ? arg : '';
-    if (input.value !== q) input.value = q;
-    setTab(tab);
-    backTo = { hash: location.hash || '#/', label: { search: q ? 'Results' : 'Search', browse: 'Browse', saved: 'Saved' }[tab] };
-    if (tab === 'browse') renderBrowse();
-    else if (tab === 'saved') renderSaved();
-    else renderSearch(q);
+    lastSearch = '';
+    input.value = '';
+    renderHome();
   }
-  setSearching();
+  clearBtn.hidden = !input.value;
   window.scrollTo(0, 0);
 }
 
-input.addEventListener('focus', setSearching);
-input.addEventListener('blur', () => setTimeout(setSearching, 0));
 input.addEventListener('input', () => {
   const v = input.value;
-  // typing from Browse or Saved switches to Search; replaceState avoids one history entry per keystroke
-  const hash = v.trim() ? `#/q/${encodeURIComponent(v)}` : '#/';
-  history.replaceState(null, '', hash);
-  setTab('search');
-  backTo = { hash, label: v.trim() ? 'Results' : 'Search' };
-  setSearching();
-  stopSpy();
-  stopSpy = () => {};
+  clearBtn.hidden = !v;
+  lastSearch = v.trim();
+  // replaceState: typing shouldn't add one history entry per keystroke
+  history.replaceState(null, '', v.trim() ? `#/q/${encodeURIComponent(v)}` : '#/');
   renderSearch(v);
   window.scrollTo(0, 0);
 });
 
 // Enter / "Search" on the phone keyboard opens the top result (single words only).
-$('search-form').addEventListener('submit', (ev) => {
+document.getElementById('search-form').addEventListener('submit', (ev) => {
   ev.preventDefault();
   input.blur();
   if (isSentence(input.value)) return;
@@ -387,19 +231,11 @@ $('search-form').addEventListener('submit', (ev) => {
   if (first && input.value.trim()) location.hash = first.getAttribute('href');
 });
 
-// keep focus on the input while tapping Cancel / Clear, so the layout doesn't jump mid-tap
-for (const b of [cancelBtn, clearBtn]) b.addEventListener('pointerdown', (ev) => ev.preventDefault());
 clearBtn.addEventListener('click', () => {
   input.value = '';
   history.replaceState(null, '', '#/');
   route();
   input.focus();
-});
-cancelBtn.addEventListener('click', () => {
-  input.value = '';
-  input.blur();
-  history.replaceState(null, '', '#/');
-  route();
 });
 
 // Scrolling the results hides the phone keyboard so the list isn't covered.
@@ -422,12 +258,11 @@ async function boot() {
     if (!res.ok) throw new Error(res.status);
     entries = await res.json();
   } catch {
-    view.innerHTML = `<div class="empty"><p class="big">Couldn't load the dictionary</p><p class="sub">Check your connection and reload.</p></div>`;
+    view.innerHTML = `<div class="empty"><p>Couldn't load the dictionary.</p><p class="sub">Check your connection and reload.</p></div>`;
     return;
   }
   index = buildIndex(entries);
   byId = new Map(entries.map((e) => [e.id, e]));
-  sorted = [...entries].sort((a, b) => a.headword.localeCompare(b.headword, 'hi'));
   route();
   updateNet();
 }
