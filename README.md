@@ -9,11 +9,13 @@ A Hindi–English dictionary for **Garuda Prakashan** (Track 3: Dictionary App),
 | Devanagari and romanised search return the same entry | ✅ `धर्म` / `dharma` / `dharm` / `dharam` / `dharmā` → धर्म |
 | Entry detail screen with all fields | ✅ headword, IAST, part of speech, meanings, example (headword highlighted), all spellings |
 | Works well on a phone | ✅ mobile-first, tested at 390px, 44px+ tap targets, keyboard closes on Enter |
-| Clear no-results state | ✅ says so plainly, offers the closest words, tips, browse all |
+| Clear no-results state | ✅ says so in one line, suggests close words only when they're genuinely close |
 | **Bonus:** typo-tolerant | ✅ `prakesh` → प्रकाश, `vishvash` → विश्वास, `sanskirti` → संस्कृति |
 | **Bonus:** works offline | ✅ service worker; verified by cutting the network in Chrome and reloading |
-| **Bonus:** recent searches / bookmarks | ✅ recently viewed, saved words, word of the day |
+| **Bonus:** recent searches / bookmarks | ✅ recent and saved words on the home screen |
 | Extra | English reverse lookup (`peace` → शांति), Hindi text-to-speech, share links |
+
+**Design:** minimal and native-feeling, like a printed dictionary. It uses the phone's own fonts (no web fonts to download), plain lists with thin dividers, and one accent colour. Phone details: a 17px search field (iOS doesn't zoom in), 44px+ tap targets, the keyboard's Search key opens the top result, scrolling the results hides the keyboard, safe-area insets for notched phones, and dark mode.
 
 ## How to run
 
@@ -64,7 +66,7 @@ The dataset already lists a few spellings for each word, but users will type spe
 
 3. **Weighted typo tolerance** (Damerau–Levenshtein). Mistakes that are normal when romanising Hindi cost half an edit: swapping one vowel for another (`vruksh`/`vriksh`), dropping a vowel (`dharam`/`dharm`), or adding or dropping an `h` (`pusthak`/`pustak`). How many edits we forgive depends on query length: none for 1–2 letters, half for 3, one for 4, and 1.5 for 5–7. This stops `ram` matching क्षमा through "chhama".
 
-4. **Ranking:** exact spelling → same sound → prefix (while typing) → fuzzy. When there's an exact hit, weaker fuzzy hits are hidden, so `dukh` doesn't also show `sukh`. Each card says why it matched ("Same sound as 'gyan'", "Close to 'prakash': did you mean this?"), so the user can trust it.
+4. **Ranking:** exact spelling → same sound → prefix (while typing) → fuzzy. When there's an exact hit, weaker fuzzy hits are hidden, so `dukh` doesn't also show `sukh`. If every hit is only a close spelling, a single line says so ("No exact match. Showing the closest words to prakesh"), so the user is never silently given a different word.
 
 ### Devanagari edge cases we handle
 
@@ -93,7 +95,7 @@ The validator was **mutation-tested**: I injected 6 kinds of error into a copy o
 
 ## Trade-offs
 
-- **Vanilla JS, no framework, no build.** The whole app is about 57 KB (18 KB gzipped), so it loads instantly on a slow phone and is trivial to cache offline. That's fine for 6 views. With 2 more weeks and more screens I'd move to a small framework.
+- **Vanilla JS, no framework, no build.** The whole app is about 57 KB (18 KB gzipped), so it loads instantly on a slow phone and is trivial to cache offline. That's fine for 3 views. With 2 more weeks and more screens I'd move to a small framework.
 - **Hand-written phonetic rules instead of a library or ML model.** Every rule can be explained and tested, and the code has no dependencies. The cost is that the rules are tuned to Hindi spelling habits and will need extending for regional habits (Tamil `th` for त, Bengali `o` for अ).
 - **A linear scan over all entries.** A search over 60 entries takes about 0.04 ms (measured). At 50,000 entries I'd precompute keys server-side and use a BK-tree or n-gram index for the fuzzy step.
 - **Web PWA instead of a native app.** One URL works on Android, iOS and desktop, installs to the home screen, and works offline, with no app-store review. The trade-off is no system-wide "look up" integration.

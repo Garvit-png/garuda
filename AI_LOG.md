@@ -16,6 +16,7 @@
 1. Pasted the full assignment overview, then: *"YEH TASK HAI MERA yeh poora krna hai, do it"* ("this is my task, I need to finish all of it").
 2. Picked the **Dictionary App** track when Claude asked which track(s) to do.
 3. Pasted the Track 3 brief (requirements, starter data and deliverables) when Claude pointed out that the brief itself was missing from the first paste.
+4. After seeing the first version: *"ux vgera sb sahi kro, bahot AI lg raha hai, fix it, ekdm minimal bnao, professional bhi lge, easy to use, thoda phone optimise"* ("fix the UX, it looks too AI-made; make it really minimal, professional, easy to use, and optimise it a bit for phones"). This led to rows 10–12 below.
 
 Claude Code then worked in small steps and committed after each one. The commit messages record what changed and why. *(Claude Code sessions can be exported with `/export` if you want to attach the full transcript.)*
 
@@ -32,6 +33,9 @@ Claude Code then worked in small steps and committed after each one. The commit 
 | 7 | The four detail-screen buttons wrapped 3+1 on a phone | Looked broken | Changed to a 4-column grid |
 | 8 | The clear (×) button showed on an empty search box | CSS `display: grid` overrode the `hidden` attribute | Added `.clear[hidden] { display: none }` |
 | 9 | `npm test` script pointed at a folder | Node 25 won't take a directory there | Changed it to a glob |
+| 10 | First UI: gradient "word of the day" card, pill chips, uppercase labels, shadows, a red "why it matched" note on every result | **My feedback: it looked too AI-generated, and I wanted it minimal, professional, easy to use and better on a phone** | Redesigned: system fonts, plain lists with dividers, one accent colour, icon buttons. Home is now just Recent, Saved and All words. One status line replaces the per-result notes. Phone fixes: Enter opens the top result, scrolling hides the keyboard, 44px targets. |
+| 11 | "Did you mean" for `bharat` offered धर्म, भाषा, पर्वत | Unrelated suggestions make the app look careless | Suggestions must now be within 1 extra edit and start with the same sound |
+| 12 | The service worker serves files cache-first | After the redesign, phones would have kept showing the old cached UI | Bumped the cache version so the new design reaches installed users |
 
 ## How facts, sources and code were checked
 

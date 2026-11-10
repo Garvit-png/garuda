@@ -118,7 +118,9 @@ export function search(index, query, { limit = 20 } = {}) {
         }
         return { entry: item.entry, score: best.d, kind: 'suggestion', via: best.via };
       })
-      .filter((s) => s.score <= threshold + 1.5)
+      // Only near misses that start with the same sound: a "did you mean" that's
+      // obviously unrelated (bharat -> धर्म) makes the app look careless.
+      .filter((s) => s.score <= threshold + 1 && phoneticKey(s.via)[0] === key[0])
       .sort((a, b) => a.score - b.score)
       .slice(0, 3);
   }

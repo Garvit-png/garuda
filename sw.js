@@ -1,5 +1,5 @@
 // Offline support: the whole dictionary is ~20 KB, so we precache everything.
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE = `garuda-dict-${VERSION}`;
 const ASSETS = [
   './', 'index.html', 'css/style.css', 'js/app.js', 'js/search.js', 'js/indic.js',
