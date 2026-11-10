@@ -127,3 +127,28 @@ export function search(index, query, { limit = 20 } = {}) {
 
   return { query: q, key, script: isDev ? 'devanagari' : 'latin', results: filtered, meaningResults, suggestions };
 }
+
+const SPLIT = /([\s,.;:!?।॥"'“”‘’()[\]{}…–—-]+)/;
+
+/**
+ * Sentence lookup: split Hindi / Hinglish text into words and mark the ones in
+ * the dictionary. This is the core a browser extension or e-book reader would
+ * call to make any text tappable.
+ *
+ * Deliberately strict, because a wrong highlight is worse than a missing one:
+ *  - only exact spellings, or same-sound matches of 4+ letters, count.
+ *    Hinglish "kal" (tomorrow) must not become कला, nor "mat" (don't) माता.
+ *  - no prefix or fuzzy matches.
+ * @returns {Array<{text: string, entry: object|null, sep: boolean}>}
+ */
+export function findWords(index, text) {
+  return (text ?? '').split(SPLIT).filter((t) => t !== '').map((t) => {
+    if (SPLIT.test(t) && !t.replace(SPLIT, '')) return { text: t, entry: null, sep: true };
+    const r = search(index, t, { limit: 1 }).results[0];
+    const ok = r && (r.kind === 'exact' || (r.kind === 'spelling' && phoneticKey(t).length >= 4));
+    return { text: t, entry: ok ? r.entry : null, sep: false };
+  });
+}
+
+/** True when the input looks like a phrase or sentence rather than one word. */
+export const isSentence = (text) => (text ?? '').trim().split(/\s+/).length >= 2;

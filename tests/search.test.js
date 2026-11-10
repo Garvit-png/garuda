@@ -118,3 +118,23 @@ test('regressions found while probing', () => {
   const v = search(index, 'v');
   assert.ok(v.results.length > 0 && v.suggestions.length === 0);
 });
+
+import { findWords } from '../js/search.js';
+const found = (t) => findWords(index, t).filter((s) => s.entry).map((s) => s.entry.headword);
+
+test('sentence lookup: finds dictionary words in Hindi and Hinglish text', () => {
+  assert.deepEqual(found('shiksha har bachche ka adhikar hai'), ['शिक्षा']);
+  assert.deepEqual(found('Gyaan aur vidya sabse bada dhan hai'), ['ज्ञान', 'विद्या']);
+  assert.deepEqual(found('सत्य की हमेशा जीत होती है।'), ['सत्य']);
+  assert.deepEqual(found('जल ही जीवन है'), ['जल', 'जीवन']);
+  assert.deepEqual(found('Dharm, karma aur shanti.'), ['धर्म', 'कर्म', 'शांति']);
+});
+
+test('sentence lookup: no false highlights on common Hinglish words', () => {
+  assert.deepEqual(found('kal mat jao, ham sab ghar par hain'), []);
+});
+
+test('sentence lookup keeps original text and spacing', () => {
+  const t = 'Prem,  aur shanti।';
+  assert.equal(findWords(index, t).map((s) => s.text).join(''), t);
+});

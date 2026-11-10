@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Shabdkosh · Garuda Prakashan</title>
-  <meta name="description" content="Hindi–English dictionary. Search in Devanagari, Roman spelling or English. Works offline.">
+  <title>शब्दकोश · Garuda Prakashan</title>
+  <meta name="description" content="Hindi–English dictionary by Garuda Prakashan. Search in Devanagari, Roman spelling or English, or paste a sentence. Works offline.">
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#0c1310" media="(prefers-color-scheme: dark)">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Shabdkosh">
+  <meta name="apple-mobile-web-app-title" content="शब्दकोश">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
@@ -17,11 +17,15 @@
 <body>
   <header class="bar">
     <div class="wrap">
-      <a class="logo" href="#/"><span lang="hi">शब्दकोश</span><span class="logo-sub">Garuda Prakashan</span></a>
+      <a class="logo" href="#/" aria-label="Shabdkosh, home">
+        <span class="logo-hi" lang="hi">शब्दकोश</span>
+        <span class="logo-rule" aria-hidden="true"></span>
+        <span class="logo-en">Garuda Prakashan</span>
+      </a>
       <form class="search" role="search" id="search-form">
         <label for="q" class="sr-only">Search the dictionary</label>
         <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
-        <input id="q" type="search" name="q" placeholder="Search a word"
+        <input id="q" type="search" name="q" placeholder="Search a word or paste a sentence"
                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
                enterkeyhint="search" aria-controls="view">
         <button type="button" id="clear" class="clear" aria-label="Clear search" hidden>

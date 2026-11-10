@@ -1,4 +1,4 @@
-import { buildIndex, search } from './search.js';
+import { buildIndex, search, findWords, isSentence } from './search.js';
 
 const view = document.getElementById('view');
 const input = document.getElementById('q');
@@ -34,12 +34,13 @@ const icon = {
   speak: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>',
   share: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M8 8l4-4 4 4"/><path d="M6 12v6.5A1.5 1.5 0 0 0 7.5 20h9a1.5 1.5 0 0 0 1.5-1.5V12"/></svg>',
 };
+const label = (hi, en) => `<p class="label"><span lang="hi">${hi}</span>${en}</p>`;
 
 function toast(msg) {
   document.querySelector('.toast')?.remove();
   const t = Object.assign(document.createElement('div'), { className: 'toast', role: 'status', textContent: msg });
   document.body.append(t);
-  setTimeout(() => t.remove(), 1600);
+  setTimeout(() => t.remove(), 1800);
 }
 
 const row = (e) => `<li><a class="row" href="#/word/${e.id}">
@@ -47,27 +48,57 @@ const row = (e) => `<li><a class="row" href="#/word/${e.id}">
   <span class="gloss">${esc(e.meanings.join('; '))}</span></a></li>`;
 const rows = (list) => `<ul class="rows">${list.map(row).join('')}</ul>`;
 
-// ---------- views ----------
+// ---------- home: recent, saved, then the whole dictionary by letter ----------
 function renderHome() {
   const recent = store.get(RECENT).map((id) => byId.get(id)).filter(Boolean);
   const saved = store.get(SAVED).map((id) => byId.get(id)).filter(Boolean);
   const all = [...entries].sort((a, b) => a.headword.localeCompare(b.headword, 'hi'));
+  const groups = new Map();
+  for (const e of all) {
+    const letter = [...e.headword.normalize('NFC')][0];
+    if (!groups.has(letter)) groups.set(letter, []);
+    groups.get(letter).push(e);
+  }
   view.innerHTML = `
-    <p class="hint">Search in Hindi or English, e.g. <span lang="hi">धर्म</span> or dharma.</p>
-    ${recent.length ? `<p class="label">Recent</p>${rows(recent)}` : ''}
-    ${saved.length ? `<p class="label">Saved</p>${rows(saved)}` : ''}
-    <p class="label">All words (${entries.length})</p>${rows(all)}`;
+    <p class="hint">Type in Hindi or English letters (<b lang="hi">धर्म</b>, <b>dharm</b>), an English word (<b>duty</b>), or paste a whole sentence.</p>
+    ${recent.length ? label('हाल ही में', 'Recent') + rows(recent) : ''}
+    ${saved.length ? label('सहेजे गए', 'Saved') + rows(saved) : ''}
+    ${label('वर्णमाला', `All ${entries.length} words`)}
+    <nav class="letters" aria-label="Jump to letter">${[...groups.keys()].map((l) =>
+      `<button type="button" data-letter="${l}" lang="hi">${l}</button>`).join('')}</nav>
+    ${[...groups].map(([l, list]) => `<h3 class="group-head" id="letter-${l}" lang="hi">${l}</h3>${rows(list)}`).join('')}`;
+
+  view.querySelector('.letters').addEventListener('click', (ev) => {
+    const l = ev.target.closest('button')?.dataset.letter;
+    if (l) document.getElementById(`letter-${l}`)?.scrollIntoView({ behavior: 'smooth' });
+  });
+}
+
+// ---------- sentence lookup: tap any known word in pasted text ----------
+function renderSentence(text) {
+  const parts = findWords(index, text);
+  const known = [...new Map(parts.filter((p) => p.entry).map((p) => [p.entry.id, p.entry])).values()];
+  if (!known.length) return false;
+  view.innerHTML = `
+    ${label('वाक्य', 'Your sentence')}
+    <p class="sentence" lang="hi">${parts.map((p) => (p.entry ? `<a href="#/word/${p.entry.id}">${esc(p.text)}</a>` : esc(p.text))).join('')}</p>
+    <p class="status">${known.length === 1 ? '1 word' : `${known.length} words`} from the dictionary. Tap to open.</p>
+    ${rows(known)}`;
+  return true;
 }
 
 function renderSearch(query) {
-  const res = search(index, query);
-  if (!res.query) return renderHome();
+  const q = (query ?? '').trim();
+  if (!q) return renderHome();
+  if (isSentence(q) && renderSentence(q)) return;
+
+  const res = search(index, q);
   const { results, meaningResults, suggestions } = res;
-  const q = esc(res.query);
+  const qs = esc(res.query);
 
   if (!results.length && !meaningResults.length) {
     view.innerHTML = `<div class="empty">
-      <p>No results for “${q}”.</p>
+      <p>No results for “${qs}”.</p>
       <p class="sub">Check the spelling, or try the word in Hindi or English.</p>
       ${suggestions.length ? `<p class="sub inline-links">Did you mean ${suggestions.map((s) =>
         `<a href="#/word/${s.entry.id}"><span lang="hi">${esc(s.entry.headword)}</span> (${esc(s.entry.romanised[0])})</a>`).join(', ')}?</p>` : ''}
@@ -77,15 +108,16 @@ function renderSearch(query) {
 
   let html = '';
   if (results.length) {
-    if (results.every((r) => r.kind === 'fuzzy')) html += `<p class="status">No exact match. Showing the closest words to <b>${q}</b>.</p>`;
+    if (results.every((r) => r.kind === 'fuzzy')) html += `<p class="status">No exact match. Showing the closest words to <b>${qs}</b>.</p>`;
     html += rows(results.map((r) => r.entry));
   }
   if (meaningResults.length) {
-    html += `<p class="label">${results.length ? 'Also in meanings' : `Hindi for “${q}”`}</p>${rows(meaningResults.map((r) => r.entry))}`;
+    html += label('अर्थ में', results.length ? 'Also in meanings' : `Hindi for “${qs}”`) + rows(meaningResults.map((r) => r.entry));
   }
   view.innerHTML = html;
 }
 
+// ---------- entry ----------
 function renderEntry(id) {
   const e = byId.get(id);
   if (!e) {
@@ -93,35 +125,34 @@ function renderEntry(id) {
     return;
   }
   pushRecent(id);
-  document.title = `${e.headword} · Shabdkosh`;
+  document.title = `${e.headword} · शब्दकोश`;
   const example = esc(e.example).replace(esc(e.headword), `<b>${esc(e.headword)}</b>`);
   const saved = isSaved(id);
   view.innerHTML = `
     <a class="back" href="${lastSearch ? `#/q/${encodeURIComponent(lastSearch)}` : '#/'}">${icon.back}Back</a>
     <article class="entry">
       <div class="entry-top">
-        <div>
-          <h1 lang="hi">${esc(e.headword)}</h1>
-          <p class="tr">${esc(e.transliteration)} · <i>${esc(e.pos)}</i></p>
-        </div>
+        <h1 lang="hi">${esc(e.headword)}</h1>
+        <p class="tr">${esc(e.transliteration)} · <i>${esc(e.pos)}</i></p>
         <div class="tools">
-          ${'speechSynthesis' in window ? `<button class="icon-btn" id="speak" aria-label="Listen">${icon.speak}</button>` : ''}
-          <button class="icon-btn" id="save" aria-label="Save word" aria-pressed="${saved}">${icon.star}</button>
-          <button class="icon-btn" id="share" aria-label="Share">${icon.share}</button>
+          ${'speechSynthesis' in window ? `<button class="icon-btn" id="speak">${icon.speak}Listen</button>` : ''}
+          <button class="icon-btn" id="save" aria-pressed="${saved}">${icon.star}<span>${saved ? 'Saved' : 'Save'}</span></button>
+          <button class="icon-btn" id="share">${icon.share}Share</button>
         </div>
       </div>
-      <h2>Meaning</h2>
+      ${label('अर्थ', 'Meaning')}
       <ol class="senses">${e.meanings.map((m) => `<li>${esc(m)}</li>`).join('')}</ol>
-      <h2>Example</h2>
+      ${label('उदाहरण', 'Example')}
       <p class="ex" lang="hi">${example}</p>
-      <h2>Also written as</h2>
+      ${label('वर्तनी', 'Also written as')}
       <p class="alt">${e.romanised.map(esc).join(', ')}</p>
     </article>`;
 
   document.getElementById('save').onclick = (ev) => {
     const now = toggleSaved(id);
     ev.currentTarget.setAttribute('aria-pressed', now);
-    toast(now ? 'Saved' : 'Removed');
+    ev.currentTarget.querySelector('span').textContent = now ? 'Saved' : 'Save';
+    toast(now ? 'Saved on this phone' : 'Removed');
   };
   document.getElementById('speak')?.addEventListener('click', () => {
     speechSynthesis.cancel();
@@ -131,11 +162,31 @@ function renderEntry(id) {
     if (voice) u.voice = voice;
     speechSynthesis.speak(u);
   });
-  document.getElementById('share').onclick = async () => {
-    const text = `${e.headword} (${e.transliteration}): ${e.meanings.join('; ')}`;
-    if (navigator.share) { try { await navigator.share({ title: e.headword, text, url: location.href }); } catch { /* cancelled */ } return; }
-    try { await navigator.clipboard.writeText(`${text}\n${location.href}`); toast('Link copied'); } catch { toast('Could not copy'); }
-  };
+  document.getElementById('share').onclick = () => shareWord(e);
+}
+
+// Share as an image card (WhatsApp / Instagram ready), falling back to a link.
+async function shareWord(e) {
+  const url = location.href;
+  const text = `${e.headword} (${e.transliteration}): ${e.meanings.join('; ')}`;
+  try {
+    const { makeCard } = await import('./card.js');
+    const blob = await makeCard(e, location.origin + location.pathname);
+    const file = new File([blob], `${e.romanised[0]}-shabdkosh.png`, { type: 'image/png' });
+    if (navigator.canShare?.({ files: [file] })) {
+      await navigator.share({ files: [file], title: e.headword, text: `${text}\n${url}` });
+      return;
+    }
+    if (navigator.share) { await navigator.share({ title: e.headword, text, url }); return; }
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: file.name });
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    toast('Word card downloaded');
+  } catch (err) {
+    if (err?.name !== 'AbortError') {
+      try { await navigator.clipboard.writeText(`${text}\n${url}`); toast('Link copied'); } catch { toast('Could not share'); }
+    }
+  }
 }
 
 // ---------- routing: #/  ·  #/q/<query>  ·  #/word/<id> ----------
@@ -144,7 +195,7 @@ function route() {
   try { hash = decodeURIComponent(hash); } catch { /* malformed escape: use as-is */ }
   const [, kind, ...rest] = hash.split('/');
   const arg = rest.join('/');
-  document.title = 'Shabdkosh · Garuda Prakashan';
+  document.title = 'शब्दकोश · Garuda Prakashan';
 
   if (kind === 'word') {
     renderEntry(Number(arg));
@@ -171,11 +222,12 @@ input.addEventListener('input', () => {
   window.scrollTo(0, 0);
 });
 
-// Enter / "Search" key on the phone keyboard opens the top result.
+// Enter / "Search" on the phone keyboard opens the top result (single words only).
 document.getElementById('search-form').addEventListener('submit', (ev) => {
   ev.preventDefault();
-  const first = view.querySelector('.row');
   input.blur();
+  if (isSentence(input.value)) return;
+  const first = view.querySelector('.row');
   if (first && input.value.trim()) location.hash = first.getAttribute('href');
 });
 
