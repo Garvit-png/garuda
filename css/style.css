@@ -136,15 +136,19 @@ body.page .masthead, body.page .searchbar { display: none; }
 .letters .gap { flex: none; display: block; width: 12px; height: 1px; margin: 5px 14px; background: var(--line); }
 .letters button[aria-current="true"]::before { content: ''; position: absolute; left: 0; top: 10px; bottom: 10px; width: 2px; border-radius: 1px; background: var(--gold); }
 .words { min-width: 0; }
+/* Letter headings look nothing like words: a tinted band in sans-serif with the letter in gold,
+   pinned under the search bar while you scroll through that letter's words. */
 .group {
-  display: flex; align-items: center; gap: 12px; margin: 0; padding: 30px 0 6px;
-  font-family: var(--serif); font-weight: 800; font-size: 24px; color: var(--accent);
-  scroll-margin-top: calc(var(--search-h) - 14px);
+  position: sticky; top: var(--search-h); z-index: 2;
+  display: flex; align-items: center; gap: 10px;
+  margin: 22px 0 4px; padding: 6px 12px; border-radius: 10px;
+  background: var(--sky); box-shadow: 0 0 0 4px var(--bg);   /* hides rows sliding underneath */
+  font-family: var(--sans); font-size: 14px; font-weight: 500; color: var(--muted);
+  scroll-margin-top: var(--search-h);
 }
-.group::after { content: ''; order: 1; flex: 1; height: 1px; background: var(--gold); opacity: .4; }   /* a line divides each letter */
-.group small { order: 2; font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--faint); }
-.group:first-child { padding-top: 4px; }
-.group + .rows li:first-child .row { padding-top: 6px; }
+.group:first-child { margin-top: 4px; }
+.group .gl { font-family: var(--serif); font-size: 22px; font-weight: 800; line-height: 1; padding-top: 6px; color: var(--gold-text); min-width: 26px; }
+.group small { margin-left: auto; font-size: 13px; color: var(--faint); }
 
 /* ---------- sentence lookup ---------- */
 .sentence { margin: 0; font-size: 21px; line-height: 1.8; overflow-wrap: anywhere; }

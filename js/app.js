@@ -119,7 +119,7 @@ function renderHome() {
           ? `<button type="button" data-l="${l}" lang="hi" aria-label="Words starting with ${l}">${l}</button>`
           : `<button type="button" lang="hi" disabled aria-label="No words starting with ${l} yet">${l}</button>`)).join('')).join('')}</nav>
       <div class="words">${[...groups].map(([l, list]) =>
-        `<h3 class="group" id="l-${l}" data-l="${l}" lang="hi"><span>${l}</span><small>${list.length}</small></h3>${rows(list)}`).join('')}</div>
+        `<h3 class="group" id="l-${l}" data-l="${l}"><span class="gl" lang="hi">${l}</span><span>Words starting with <span lang="hi">${l}</span></span><small>${list.length}</small></h3>${rows(list)}`).join('')}</div>
     </div>
     <p class="foot">A Garuda Prakashan dictionary. Works offline.</p>
   </div>`;
