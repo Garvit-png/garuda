@@ -1,10 +1,11 @@
 // "Share as image": draws a 1080×1350 word card (Instagram/WhatsApp portrait size)
 // on a canvas. For a publisher, every shared card is free, branded reach.
 
-const GREEN = '#0e6b3f';
-const INK = '#13201a';
-const MUTED = '#5b6b62';
-const TINT = '#eef6f1';
+const GREEN = '#0b7a46';
+const INK = '#17201b';
+const MUTED = '#6b7670';
+const LINE = '#e8ecea';
+const SERIF_DEVA = "'Noto Serif Devanagari', 'Kohinoor Devanagari', serif";
 const DEVA = "'Kohinoor Devanagari', 'Noto Sans Devanagari', 'Nirmala UI', 'Mangal', sans-serif";
 const LATIN = "-apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
 
@@ -26,39 +27,55 @@ export async function makeCard(entry, url = '') {
   const c = document.createElement('canvas');
   c.width = W; c.height = H;
   const ctx = c.getContext('2d');
-  try { await document.fonts?.ready; } catch { /* ignore */ }
+  try {
+    await Promise.all([document.fonts.load(`800 200px 'Noto Serif Devanagari'`, entry.headword),
+      document.fonts.load(`800 60px 'Noto Serif Devanagari'`, 'शब्दकोश')]);
+  } catch { /* fall back to system fonts */ }
 
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, W, H);
 
-  // Brand: शब्दकोश with its shirorekha extended across the card
-  ctx.fillStyle = GREEN;
-  ctx.font = `600 44px ${DEVA}`;
+  // Brand
+  ctx.fillStyle = INK;
+  ctx.font = `800 56px ${SERIF_DEVA}`;
   ctx.textBaseline = 'alphabetic';
-  ctx.fillText('शब्दकोश', X, 150);
-  const bw = ctx.measureText('शब्दकोश').width;
-  ctx.fillRect(X + bw + 20, 116, W - X - (X + bw + 20), 4);
-  ctx.beginPath(); ctx.arc(W - X, 118, 9, 0, Math.PI * 2); ctx.fill();
+  ctx.fillText('शब्दकोश', X, 170);
 
   // Headword (shrinks to fit long words)
-  let size = 210;
-  ctx.font = `600 ${size}px ${DEVA}`;
-  while (ctx.measureText(entry.headword).width > MAX && size > 90) { size -= 10; ctx.font = `600 ${size}px ${DEVA}`; }
-  ctx.fillStyle = INK;
-  ctx.fillText(entry.headword, X - 6, 300 + size);
-  let y = 300 + size + 80;
+  let size = 220;
+  ctx.font = `800 ${size}px ${SERIF_DEVA}`;
+  while (ctx.measureText(entry.headword).width > MAX && size > 90) { size -= 10; ctx.font = `800 ${size}px ${SERIF_DEVA}`; }
+  ctx.fillText(entry.headword, X - 6, 280 + size);
+  let y = 280 + size + 90;
 
-  ctx.font = `italic 46px ${LATIN}`;
-  ctx.fillStyle = MUTED;
-  ctx.fillText(`${entry.transliteration}  ·  ${entry.pos}`, X, y);
-  y += 90;
+  ctx.font = `48px ${LATIN}`;
+  ctx.fillStyle = GREEN;
+  ctx.fillText(`/${entry.transliteration}/`, X, y);
+  y += 50;
+
+  // Part of speech as a segmented label
+  const parts = entry.pos.match(/^(\S+)\s*\((.+)\)$/);
+  const segs = parts ? [parts[1], { 'f.': 'feminine', 'm.': 'masculine' }[parts[2]] ?? parts[2]] : [entry.pos];
+  ctx.font = `34px ${LATIN}`;
+  let sx = X;
+  const segH = 64;
+  ctx.lineWidth = 3; ctx.strokeStyle = GREEN;
+  segs.forEach((t, i) => {
+    const w = ctx.measureText(t).width + 56;
+    if (i === 0) { ctx.fillStyle = GREEN; ctx.fillRect(sx, y, w, segH); }
+    ctx.strokeRect(sx, y, w, segH);
+    ctx.fillStyle = i === 0 ? '#ffffff' : GREEN;
+    ctx.fillText(t, sx + 28, y + 44);
+    sx += w;
+  });
+  y += segH + 100;
 
   // Meanings
   ctx.font = `500 52px ${LATIN}`;
   ctx.fillStyle = INK;
   entry.meanings.slice(0, 3).forEach((m, i) => {
     for (const [j, line] of wrap(ctx, m, MAX - 60).entries()) {
-      if (j === 0) { ctx.fillStyle = GREEN; ctx.fillText(`${i + 1}`, X, y); ctx.fillStyle = INK; }
+      if (j === 0) { ctx.font = `700 52px ${LATIN}`; ctx.fillText(`${i + 1}.`, X, y); ctx.font = `500 52px ${LATIN}`; }
       ctx.fillText(line, X + 60, y);
       y += 66;
     }
@@ -71,15 +88,15 @@ export async function makeCard(entry, url = '') {
   const ex = wrap(ctx, entry.example, MAX - 70).slice(0, 3);
   const boxH = ex.length * 66 + 50;
   if (y + boxH < H - 170) {
-    ctx.fillStyle = TINT; ctx.fillRect(X, y, MAX, boxH);
-    ctx.fillStyle = GREEN; ctx.fillRect(X, y, 6, boxH);
-    ctx.fillStyle = INK;
-    ex.forEach((line, i) => ctx.fillText(line, X + 40, y + 70 + i * 66));
+    ctx.fillStyle = MUTED;
+    ex.forEach((line, i) => ctx.fillText(line, X, y + 50 + i * 66));
   }
 
   // Footer
   ctx.fillStyle = GREEN;
   ctx.fillRect(0, H - 14, W, 14);
+  ctx.fillStyle = LINE;
+  ctx.fillRect(X, H - 150, MAX, 2);
   ctx.font = `500 34px ${LATIN}`;
   ctx.fillStyle = INK;
   ctx.fillText('Garuda Prakashan', X, H - 80);

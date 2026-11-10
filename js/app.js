@@ -4,6 +4,7 @@ const view = document.getElementById('view');
 const input = document.getElementById('q');
 const clearBtn = document.getElementById('clear');
 const offlineNote = document.getElementById('offline');
+const cancelBtn = document.getElementById('cancel');
 
 let entries = [];
 let index = [];
@@ -31,10 +32,15 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&
 const icon = {
   back: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>',
   star: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>',
-  speak: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>',
-  share: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M8 8l4-4 4 4"/><path d="M6 12v6.5A1.5 1.5 0 0 0 7.5 20h9a1.5 1.5 0 0 0 1.5-1.5V12"/></svg>',
+  speak: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z" fill="currentColor"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>',
+  share: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v11M8 7.5l4-4 4 4"/><path d="M7 11H6a1.5 1.5 0 0 0-1.5 1.5v6.5A1.5 1.5 0 0 0 6 20.5h12a1.5 1.5 0 0 0 1.5-1.5v-6.5A1.5 1.5 0 0 0 18 11h-1"/></svg>',
 };
-const label = (hi, en) => `<p class="label"><span lang="hi">${hi}</span>${en}</p>`;
+const heading = (text, count) => `<h2 class="heading">${text}${count ? `<span class="count">${count}</span>` : ''}</h2>`;
+const GENDER = { 'f.': 'feminine', 'm.': 'masculine' };
+const posParts = (pos) => {
+  const m = pos.match(/^(\S+)\s*\((.+)\)$/);
+  return m ? [m[1], GENDER[m[2]] ?? m[2]] : [pos];
+};
 
 function toast(msg) {
   document.querySelector('.toast')?.remove();
@@ -45,25 +51,27 @@ function toast(msg) {
 
 const row = (e) => `<li><a class="row" href="#/word/${e.id}">
   <span class="row-top"><span class="hw" lang="hi">${esc(e.headword)}</span><span class="tr">${esc(e.transliteration)}</span></span>
-  <span class="gloss">${esc(e.meanings.join('; '))}</span></a></li>`;
+  <span class="gloss">${esc(e.meanings.join(', '))}</span></a></li>`;
 const rows = (list) => `<ul class="rows">${list.map(row).join('')}</ul>`;
+const plain = (list) => `<ul class="plain">${list.map((e) =>
+  `<li><a href="#/word/${e.id}"><span lang="hi">${esc(e.headword)}</span><span class="tr">${esc(e.transliteration)}</span></a></li>`).join('')}</ul>`;
+
+let sorted = [];
 
 // ---------- home: recent, saved, then the whole dictionary by letter ----------
 function renderHome() {
   const recent = store.get(RECENT).map((id) => byId.get(id)).filter(Boolean);
   const saved = store.get(SAVED).map((id) => byId.get(id)).filter(Boolean);
-  const all = [...entries].sort((a, b) => a.headword.localeCompare(b.headword, 'hi'));
   const groups = new Map();
-  for (const e of all) {
+  for (const e of sorted) {
     const letter = [...e.headword.normalize('NFC')][0];
     if (!groups.has(letter)) groups.set(letter, []);
     groups.get(letter).push(e);
   }
   view.innerHTML = `
-    <p class="hint">Type in Hindi or English letters (<b lang="hi">धर्म</b>, <b>dharm</b>), an English word (<b>duty</b>), or paste a whole sentence.</p>
-    ${recent.length ? label('हाल ही में', 'Recent') + rows(recent) : ''}
-    ${saved.length ? label('सहेजे गए', 'Saved') + rows(saved) : ''}
-    ${label('वर्णमाला', `All ${entries.length} words`)}
+    ${recent.length ? heading('Recent') + plain(recent) : ''}
+    ${saved.length ? heading('Saved', saved.length) + plain(saved) : ''}
+    ${heading('All words', entries.length)}
     <nav class="letters" aria-label="Jump to letter">${[...groups.keys()].map((l) =>
       `<button type="button" data-letter="${l}" lang="hi">${l}</button>`).join('')}</nav>
     ${[...groups].map(([l, list]) => `<h3 class="group-head" id="letter-${l}" lang="hi">${l}</h3>${rows(list)}`).join('')}`;
@@ -80,9 +88,8 @@ function renderSentence(text) {
   const known = [...new Map(parts.filter((p) => p.entry).map((p) => [p.entry.id, p.entry])).values()];
   if (!known.length) return false;
   view.innerHTML = `
-    ${label('वाक्य', 'Your sentence')}
+    ${heading('In your sentence', known.length)}
     <p class="sentence" lang="hi">${parts.map((p) => (p.entry ? `<a href="#/word/${p.entry.id}">${esc(p.text)}</a>` : esc(p.text))).join('')}</p>
-    <p class="status">${known.length === 1 ? '1 word' : `${known.length} words`} from the dictionary. Tap to open.</p>
     ${rows(known)}`;
   return true;
 }
@@ -98,9 +105,9 @@ function renderSearch(query) {
 
   if (!results.length && !meaningResults.length) {
     view.innerHTML = `<div class="empty">
-      <p>No results for “${qs}”.</p>
+      <p>No results for “${qs}”</p>
       <p class="sub">Check the spelling, or try the word in Hindi or English.</p>
-      ${suggestions.length ? `<p class="sub inline-links">Did you mean ${suggestions.map((s) =>
+      ${suggestions.length ? `<p class="sub">Did you mean ${suggestions.map((s) =>
         `<a href="#/word/${s.entry.id}"><span lang="hi">${esc(s.entry.headword)}</span> (${esc(s.entry.romanised[0])})</a>`).join(', ')}?</p>` : ''}
     </div>`;
     return;
@@ -108,53 +115,70 @@ function renderSearch(query) {
 
   let html = '';
   if (results.length) {
-    if (results.every((r) => r.kind === 'fuzzy')) html += `<p class="status">No exact match. Showing the closest words to <b>${qs}</b>.</p>`;
+    if (results.every((r) => r.kind === 'fuzzy')) html += `<p class="status">No exact match. Closest words to <b>${qs}</b>:</p>`;
     html += rows(results.map((r) => r.entry));
   }
   if (meaningResults.length) {
-    html += label('अर्थ में', results.length ? 'Also in meanings' : `Hindi for “${qs}”`) + rows(meaningResults.map((r) => r.entry));
+    html += heading(results.length ? 'In meanings' : `Hindi for “${qs}”`) + rows(meaningResults.map((r) => r.entry));
   }
   view.innerHTML = html;
 }
 
 // ---------- entry ----------
+function exampleHtml(e) {
+  // the headword in bold green; any other dictionary word in the sentence is a link
+  return findWords(index, e.example).map((p) => {
+    if (p.entry?.id === e.id || p.text === e.headword) return `<b>${esc(p.text)}</b>`;
+    if (p.entry) return `<a href="#/word/${p.entry.id}">${esc(p.text)}</a>`;
+    return esc(p.text);
+  }).join('');
+}
+
 function renderEntry(id) {
   const e = byId.get(id);
   if (!e) {
-    view.innerHTML = `<div class="empty"><p>This word isn't in the dictionary.</p><p class="sub inline-links"><a href="#/">Back to search</a></p></div>`;
+    view.innerHTML = `<div class="empty"><p>This word isn't in the dictionary.</p><p class="sub"><a href="#/">Back to search</a></p></div>`;
     return;
   }
   pushRecent(id);
-  document.title = `${e.headword} · शब्दकोश`;
-  const example = esc(e.example).replace(esc(e.headword), `<b>${esc(e.headword)}</b>`);
+  document.title = `${e.headword}, शब्दकोश`;
   const saved = isSaved(id);
+  const canSpeak = 'speechSynthesis' in window;
+  const i = sorted.indexOf(e);
+  const nearby = sorted.slice(Math.max(0, i - 2), i + 3).filter((x) => x !== e).slice(0, 4);
   view.innerHTML = `
-    <a class="back" href="${lastSearch ? `#/q/${encodeURIComponent(lastSearch)}` : '#/'}">${icon.back}Back</a>
-    <article class="entry">
-      <div class="entry-top">
-        <h1 lang="hi">${esc(e.headword)}</h1>
-        <p class="tr">${esc(e.transliteration)} · <i>${esc(e.pos)}</i></p>
-        <div class="tools">
-          ${'speechSynthesis' in window ? `<button class="icon-btn" id="speak">${icon.speak}Listen</button>` : ''}
-          <button class="icon-btn" id="save" aria-pressed="${saved}">${icon.star}<span>${saved ? 'Saved' : 'Save'}</span></button>
-          <button class="icon-btn" id="share">${icon.share}Share</button>
-        </div>
+    <nav class="nav">
+      <a class="back" href="${lastSearch ? `#/q/${encodeURIComponent(lastSearch)}` : '#/'}">${icon.back}${lastSearch ? 'Search' : 'Words'}</a>
+      <div class="nav-actions">
+        <button id="save" aria-pressed="${saved}" aria-label="${saved ? 'Remove from saved' : 'Save word'}">${icon.star}</button>
+        <button id="share" aria-label="Share as image">${icon.share}</button>
       </div>
-      ${label('अर्थ', 'Meaning')}
+    </nav>
+    <article class="entry">
+      <h1 lang="hi">${esc(e.headword)}</h1>
+      <button class="say" id="speak" ${canSpeak ? 'aria-label="Listen"' : 'disabled'}>/${esc(e.transliteration)}/ ${canSpeak ? icon.speak : ''}</button>
+      <div><span class="pos">${posParts(e.pos).map((p) => `<span>${esc(p)}</span>`).join('')}</span></div>
+
+      ${heading('Meanings', e.meanings.length)}
       <ol class="senses">${e.meanings.map((m) => `<li>${esc(m)}</li>`).join('')}</ol>
-      ${label('उदाहरण', 'Example')}
-      <p class="ex" lang="hi">${example}</p>
-      ${label('वर्तनी', 'Also written as')}
-      <p class="alt">${e.romanised.map(esc).join(', ')}</p>
+
+      ${heading('Example')}
+      <p class="ex linked" lang="hi">${exampleHtml(e)}</p>
+
+      <div class="cols">
+        <div>${heading('Spellings', e.romanised.length)}<ul>${e.romanised.map((r) => `<li>${esc(r)}</li>`).join('')}</ul></div>
+        <div>${heading('Nearby')}<ul class="linked">${nearby.map((n) =>
+          `<li><a href="#/word/${n.id}"><span lang="hi">${esc(n.headword)}</span></a></li>`).join('')}</ul></div>
+      </div>
     </article>`;
 
   document.getElementById('save').onclick = (ev) => {
     const now = toggleSaved(id);
     ev.currentTarget.setAttribute('aria-pressed', now);
-    ev.currentTarget.querySelector('span').textContent = now ? 'Saved' : 'Save';
-    toast(now ? 'Saved on this phone' : 'Removed');
+    ev.currentTarget.setAttribute('aria-label', now ? 'Remove from saved' : 'Save word');
+    toast(now ? 'Saved' : 'Removed from saved');
   };
-  document.getElementById('speak')?.addEventListener('click', () => {
+  if (canSpeak) document.getElementById('speak').addEventListener('click', () => {
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(e.headword);
     u.lang = 'hi-IN';
@@ -195,7 +219,8 @@ function route() {
   try { hash = decodeURIComponent(hash); } catch { /* malformed escape: use as-is */ }
   const [, kind, ...rest] = hash.split('/');
   const arg = rest.join('/');
-  document.title = 'शब्दकोश · Garuda Prakashan';
+  document.title = 'शब्दकोश, Garuda Prakashan';
+  document.body.classList.toggle('reading', kind === 'word');
 
   if (kind === 'word') {
     renderEntry(Number(arg));
@@ -208,13 +233,31 @@ function route() {
     input.value = '';
     renderHome();
   }
-  clearBtn.hidden = !input.value;
+  setSearching();
   window.scrollTo(0, 0);
 }
 
+// Focus or a query folds the big title away and shows Cancel.
+function setSearching() {
+  const on = !!input.value || document.activeElement === input;
+  document.body.classList.toggle('searching', on);
+  cancelBtn.hidden = !on;
+  clearBtn.hidden = !input.value;
+}
+input.addEventListener('focus', setSearching);
+input.addEventListener('blur', () => setTimeout(setSearching, 0));
+// keep focus on the input while tapping Cancel / Clear, so the layout doesn't jump mid-tap
+for (const b of [cancelBtn, clearBtn]) b.addEventListener('pointerdown', (ev) => ev.preventDefault());
+cancelBtn.addEventListener('click', () => {
+  input.value = '';
+  input.blur();
+  history.replaceState(null, '', '#/');
+  route();
+});
+
 input.addEventListener('input', () => {
   const v = input.value;
-  clearBtn.hidden = !v;
+  setSearching();
   lastSearch = v.trim();
   // replaceState: typing shouldn't add one history entry per keystroke
   history.replaceState(null, '', v.trim() ? `#/q/${encodeURIComponent(v)}` : '#/');
@@ -263,6 +306,7 @@ async function boot() {
   }
   index = buildIndex(entries);
   byId = new Map(entries.map((e) => [e.id, e]));
+  sorted = [...entries].sort((a, b) => a.headword.localeCompare(b.headword, 'hi'));
   route();
   updateNet();
 }
