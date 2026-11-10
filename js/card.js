@@ -1,10 +1,10 @@
 // "Share as image": draws a 1080×1350 word card (Instagram/WhatsApp portrait size)
 // on a canvas. For a publisher, every shared card is free, branded reach.
 
-const GREEN = '#0b7a46';
-const INK = '#17201b';
-const MUTED = '#6b7670';
-const LINE = '#e8ecea';
+const GREEN = '#2c3a8c'; // indigo (brand)
+const INK = '#1a1d33';
+const MUTED = '#666b82';
+const LINE = '#e8e9f0';
 const SERIF_DEVA = "'Noto Serif Devanagari', 'Kohinoor Devanagari', serif";
 const DEVA = "'Kohinoor Devanagari', 'Noto Sans Devanagari', 'Nirmala UI', 'Mangal', sans-serif";
 const LATIN = "-apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
@@ -93,8 +93,8 @@ export async function makeCard(entry, url = '') {
   }
 
   // Footer
-  ctx.fillStyle = GREEN;
-  ctx.fillRect(0, H - 14, W, 14);
+  ctx.fillStyle = '#f4b21f';            // marigold base bar
+  ctx.fillRect(0, H - 16, W, 16);
   ctx.fillStyle = LINE;
   ctx.fillRect(X, H - 150, MAX, 2);
   ctx.font = `500 34px ${LATIN}`;
