@@ -1,0 +1,14 @@
+{
+  "name": "Garuda Shabdkosh",
+  "short_name": "Shabdkosh",
+  "description": "Hindi–English dictionary. Search in Devanagari or Roman spelling, works offline.",
+  "lang": "en",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fbf6ee",
+  "theme_color": "#7a2e12",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

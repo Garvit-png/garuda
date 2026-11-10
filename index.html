@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Garuda Shabdkosh</title>
+  <meta name="description" content="Hindi–English dictionary prototype for Garuda Prakashan. Search in Devanagari or Roman spelling, works offline.">
+  <meta name="theme-color" content="#7a2e12" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1b1411" media="(prefers-color-scheme: dark)">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;700&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <a class="brand" href="#/" aria-label="Garuda Shabdkosh home">
+        <span class="brand-mark" lang="hi" aria-hidden="true">श</span>
+        <span class="brand-text"><span lang="hi">गरुड़ शब्दकोश</span><small>Garuda Shabdkosh</small></span>
+      </a>
+      <form class="search" role="search" id="search-form">
+        <label for="q" class="sr-only">Search the dictionary</label>
+        <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" name="q" placeholder="shanti, शांति or peace"
+               autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+               enterkeyhint="search" aria-describedby="search-hint" aria-controls="view">
+        <button type="button" id="clear" class="clear" aria-label="Clear search" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </form>
+      <p id="search-hint" class="sr-only">Type in Roman letters, Devanagari, or English. Results update as you type.</p>
+    </div>
+  </header>
+
+  <main id="view" class="wrap" aria-live="polite" tabindex="-1">
+    <p class="loading">Loading dictionary…</p>
+  </main>
+
+  <footer class="wrap foot">
+    <span id="net-status"></span>
+    <span>Prototype for Garuda Prakashan · <span id="count"></span> words</span>
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
