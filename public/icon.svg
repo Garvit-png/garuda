@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#eef3ff"/>
-  <g transform="translate(96 70) scale(5)" fill="none" stroke="#e3961c" stroke-width="2" stroke-linecap="round">
+  <rect width="512" height="512" rx="112" fill="#ffffff"/>
+  <g transform="translate(96 70) scale(5)" fill="none" stroke="#d08a1c" stroke-width="2" stroke-linecap="round">
     <path d="M4 30C14 18 30 8 60 4M10 30.5C22 24 38 16 58 11M16 31.2C28 27 42 22 55 18M22 32C33 30 44 27 52 25M4 30 22 32"/>
   </g>
-  <text x="256" y="440" text-anchor="middle" font-family="'Noto Serif Devanagari','Kohinoor Devanagari',serif" font-size="230" font-weight="800" fill="#2448a8">श</text>
+  <text x="256" y="440" text-anchor="middle" font-family="'Noto Serif Devanagari','Kohinoor Devanagari',serif" font-size="230" font-weight="800" fill="#3346b0">श</text>
 </svg>

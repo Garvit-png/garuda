@@ -3,11 +3,11 @@
 import type { Entry } from '../lib/types.ts';
 import { posText } from './dom.ts';
 
-const INK = '#1c2541';
-const MUTED = '#4b5675';
-const LINE = '#e5e9f3';
-const BLUE = '#2448a8';
-const GOLD = '#e3961c';
+const INK = '#1b1f3b';
+const MUTED = '#5d6380';
+const LINE = '#eceef4';
+const BLUE = '#3346b0';
+const GOLD = '#d08a1c';
 const SERIF_DEVA = "'Noto Serif Devanagari', 'Kohinoor Devanagari', serif";
 const DEVA = "'Kohinoor Devanagari', 'Noto Sans Devanagari', 'Nirmala UI', 'Mangal', sans-serif";
 const LATIN = "-apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
