@@ -8,7 +8,7 @@
 |---|---|
 | **Claude Code** (Claude Opus 5.5, terminal agent) | Planning the approach, writing all the code (search engine, UI, service worker, validator, tests), drafting the 50 new dictionary entries, the README and this log |
 | **Headless Google Chrome** (driven by Claude Code) | Screenshots at phone width (390px), and an offline test over the Chrome DevTools Protocol |
-| **Node.js test runner** | 15 automated search tests, plus the data validator |
+| **Node.js test runner** | 18 automated tests (search + sentence lookup), plus the data validator |
 | ✍️ *Add anything you used yourself, e.g. a Hindi dictionary site to cross-check meanings* | |
 
 ## Key prompts
