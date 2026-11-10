@@ -4,17 +4,18 @@
    Screens: Home (recent + every word, letters in a sidebar), Results, Word, Saved. */
 :root {
   --bg: #ffffff;
-  --ink: #24323f;          /* soft slate, easier on the eye than black */
-  --muted: #4f5e6b;        /* darker greys: easier to read */
-  --faint: #7d8a96;
-  --line: #e6ecf1;
+  --ink: #1c2541;          /* deep navy text */
+  --muted: #4b5675;
+  --faint: #8b94ad;
+  --line: #e5e9f3;
   --field: #ffffff;
-  --sky: #f3f7fa;          /* pale sky tint for quiet blocks */
-  --accent: #24323f;
-  --gold: #b0852f;         /* Garuda gold: lines, marks, large text */
-  --gold-text: #8a6516;    /* gold that's readable at small sizes */
-  --gold-soft: #f1e4c6;
-  --press: #f3f7fa;
+  --sky: #eef3ff;          /* light blue tint */
+  --accent: #2448a8;       /* royal blue: Vishnu's colour, Garuda's rider */
+  --gold: #e3961c;         /* Garuda gold */
+  --gold-text: #a4620a;    /* gold readable at small sizes */
+  --gold-soft: #fff3dc;    /* warm tint */
+  --press: #f2f5fc;
+  --tabbar: 62px;
   --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --deva: 'Kohinoor Devanagari', 'Noto Sans Devanagari', 'Nirmala UI', 'Mangal', var(--sans);
   --serif: 'Noto Serif Devanagari', 'Kohinoor Devanagari', var(--deva);
@@ -23,8 +24,8 @@
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #121a21; --ink: #e5ecf2; --muted: #9aabb9; --faint: #5f6f7c; --line: #24313c;
-    --field: #121a21; --sky: #18222b; --accent: #e5ecf2; --gold: #d8b265; --gold-text: #e0bd73; --gold-soft: #4a3d22; --press: #18222b;
+    --bg: #10152a; --ink: #e6eaf6; --muted: #a3acc6; --faint: #66708c; --line: #242c48;
+    --field: #10152a; --sky: #18203d; --accent: #8fa8ff; --gold: #f0aa3a; --gold-text: #f3bd5e; --gold-soft: #2e2716; --press: #18203d;
     color-scheme: dark;
   }
 }
@@ -49,18 +50,16 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 .masthead { padding-top: env(safe-area-inset-top); }
 .brand-row { display: flex; align-items: center; justify-content: space-between; padding-top: 18px; padding-bottom: 4px; }
 .brand { display: flex; align-items: center; gap: 10px; }
-.wing { width: 38px; height: 22px; color: var(--gold); stroke-width: 1.6; flex: none; }
+.wing { width: 40px; height: 23px; color: var(--gold); stroke-width: 2; flex: none; }
 .brand-hi { font-family: var(--serif); font-weight: 800; font-size: 30px; line-height: 1.3; color: var(--accent); }
 .brand-en { font-size: 13px; color: var(--muted); }
 .head-actions { display: flex; align-items: center; gap: 2px; }
 .size-btn { width: 44px; height: 44px; border-radius: 12px; font-size: 17px; font-weight: 600; color: var(--muted); }
 .size-btn[aria-pressed="true"] { color: var(--gold-text); }
 body.large main { zoom: 1.15; }
-.saved-link { position: relative; width: 44px; height: 44px; margin-right: -10px; display: grid; place-items: center; color: var(--accent); }
-.saved-link svg { width: 24px; height: 24px; }
 .badge {
-  position: absolute; top: 5px; right: 4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
-  background: var(--bg); color: var(--ink); border: 1px solid var(--ink); font-size: 10px; font-weight: 700; line-height: 16px; text-align: center;
+  position: absolute; top: 6px; left: calc(50% + 8px); min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px;
+  background: var(--gold); color: #fff; font-size: 10px; font-weight: 700; line-height: 17px; text-align: center;
 }
 
 /* ---------- search (sticks to the top) ---------- */
@@ -84,7 +83,33 @@ body.large main { zoom: 1.15; }
 .clear svg { width: 18px; height: 18px; }
 
 .offline { margin: 0; padding: 8px 20px; text-align: center; font-size: 13px; color: var(--muted); border-bottom: 1px solid var(--line); }
-main { padding-bottom: calc(48px + env(safe-area-inset-bottom)); outline: none; }
+main { flex: 1; padding-bottom: 32px; outline: none; }
+
+/* ---------- phone app shell: full height, bottom tab bar ---------- */
+body { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
+.tabbar {
+  position: sticky; bottom: 0; z-index: 12; display: flex;
+  padding-bottom: env(safe-area-inset-bottom);
+  background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--line);
+}
+.tabbar a {
+  position: relative; flex: 1; height: var(--tabbar);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  font-size: 11px; font-weight: 600; color: var(--faint);
+}
+.tabbar svg { width: 25px; height: 25px; }
+.tabbar a[data-tab="home"] svg { width: 34px; height: 25px; stroke-width: 2.2; }
+.tabbar a[aria-current="page"] { color: var(--accent); }
+.tabbar a[aria-current="page"] svg { color: var(--gold); }
+.tabbar a:active { background: var(--press); }
+
+/* on a laptop, show it as a phone-width app in the middle of the screen */
+@media (min-width: 600px) {
+  html { background: #e8ecf5; }
+  body { max-width: 430px; margin: 0 auto; box-shadow: 0 0 0 1px var(--line), 0 20px 60px rgb(28 37 65 / .12); }
+}
+@media (min-width: 600px) and (prefers-color-scheme: dark) { html { background: #080b17; } }
 
 /* word and saved screens have their own top bar */
 body.page .masthead, body.page .searchbar { display: none; }
@@ -118,7 +143,7 @@ body.page .masthead, body.page .searchbar { display: none; }
 .browse { display: grid; grid-template-columns: 44px 1fr; gap: 0 18px; }
 .letters {
   position: sticky; top: var(--search-h); align-self: start;
-  max-height: calc(100vh - var(--search-h)); max-height: calc(100dvh - var(--search-h));
+  max-height: calc(100vh - var(--search-h) - var(--tabbar)); max-height: calc(100dvh - var(--search-h) - var(--tabbar) - env(safe-area-inset-bottom));
   overflow-y: auto; scrollbar-width: none; overscroll-behavior: contain;
   display: flex; flex-direction: column; gap: 2px; padding: 8px 0 24px;
 }
@@ -129,7 +154,7 @@ body.page .masthead, body.page .searchbar { display: none; }
   transition: background .15s, color .15s;
 }
 .letters button { color: var(--faint); position: relative; }
-.letters button[aria-current="true"] { color: var(--ink); font-weight: 800; }
+.letters button[aria-current="true"] { color: var(--accent); font-weight: 800; background: var(--sky); }
 .letters button:disabled { opacity: .25; cursor: default; }
 .letters hr { width: 28px; margin: 10px 6px 6px; border: 0; border-top: 1.5px solid var(--gold); opacity: .45; flex: none; }
 .lt-label { flex: none; width: 40px; padding: 2px 0 4px; text-align: center; font-size: 11px; font-weight: 600; color: var(--gold-text); }
@@ -147,7 +172,7 @@ body.page .masthead, body.page .searchbar { display: none; }
   scroll-margin-top: var(--search-h);
 }
 .group:first-child { margin-top: 4px; }
-.group .gl { font-family: var(--serif); font-size: 36px; font-weight: 800; line-height: 1; padding-top: 10px; color: var(--gold-text); min-width: 26px; }
+.group .gl { font-family: var(--serif); font-size: 36px; font-weight: 800; line-height: 1; padding-top: 10px; color: var(--accent); min-width: 26px; }
 .group small { margin-left: auto; font-size: 13px; color: var(--faint); }
 
 /* ---------- sentence lookup ---------- */
@@ -178,7 +203,7 @@ body.page .masthead, body.page .searchbar { display: none; }
 /* ---------- word ---------- */
 .word { padding-top: 18px; }
 .word h1 { margin: 0; font-family: var(--serif); font-weight: 800; font-size: 54px; line-height: 1.2; overflow-wrap: anywhere; }
-.say { display: inline-flex; align-items: center; gap: 8px; margin-top: 2px; padding: 6px 0; font-size: 19px; color: var(--muted); }
+.say { display: inline-flex; align-items: center; gap: 8px; margin-top: 2px; padding: 6px 0; font-size: 19px; color: var(--accent); }
 .say svg { width: 22px; height: 22px; }
 .say:active { opacity: .6; }
 .say.speaking svg { animation: pulse .8s ease-in-out infinite alternate; }
@@ -203,14 +228,11 @@ body.page .masthead, body.page .searchbar { display: none; }
 .pager span { font-family: var(--serif); font-weight: 600; font-size: 20px; color: var(--accent); }
 
 .toast {
-  position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%);
+  position: fixed; left: 50%; bottom: calc(var(--tabbar) + 16px + env(safe-area-inset-bottom)); transform: translateX(-50%);
   background: var(--ink); color: var(--bg); padding: 10px 18px; border-radius: 12px; font-size: 14px; z-index: 20; white-space: nowrap;
 }
 /* ---------- home: one-line help, practice ---------- */
-.practice-link { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; padding: 12px 2px; font-size: 15px; color: var(--muted); border-bottom: 1px solid var(--line); }
-.practice-link strong { color: var(--ink); font-weight: 600; margin-right: 6px; }
-.practice-link svg { width: 18px; height: 18px; color: var(--gold); }
-.foot { margin: 40px 0 0; text-align: center; font-size: 13px; color: var(--faint); }
+.foot { margin: 32px 0 0; text-align: center; font-size: 13px; color: var(--faint); }
 
 /* ---------- practice quiz ---------- */
 .quiz { padding-top: 18px; }
@@ -245,16 +267,16 @@ body.page .masthead, body.page .searchbar { display: none; }
 /* ---------- आज का शब्द: word of the day ---------- */
 .today {
   position: relative; overflow: hidden; display: block; margin-top: 14px; padding: 16px 18px 18px;
-  background: var(--sky); border-radius: 16px;
+  background: var(--gold-soft); border-radius: 18px;
 }
-.today:active { background: var(--line); }
+.today:active { filter: brightness(.97); }
 .today .kicker { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 13px; color: var(--gold-text); }
 .today .kicker [lang="hi"] { font-size: 15px; font-weight: 600; }
 .today .kicker .date { color: var(--muted); }
 .today .hw { display: block; margin-top: 6px; font-family: var(--serif); font-weight: 800; font-size: 38px; line-height: 1.25; }
 .today .tr { margin: 0; font-size: 15px; color: var(--muted); }
 .today .mean { margin: 8px 0 0; font-size: 17px; }
-.today .wing-bg { position: absolute; right: -18px; top: 18px; width: 190px; height: 110px; color: var(--gold); opacity: .22; stroke-width: 1.2; pointer-events: none; }
+.today .wing-bg { position: absolute; right: -18px; top: 18px; width: 190px; height: 110px; color: var(--gold); opacity: .55; stroke-width: 1.4; pointer-events: none; }
 
 @media (min-width: 700px) {
   .brand-row { padding-top: 32px; }

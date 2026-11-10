@@ -108,7 +108,7 @@ function renderHome() {
 
   view.innerHTML = `<div class="wrap">
     ${todayCard()}
-    <a class="practice-link" href="#/practice"><span><strong>Practice</strong> 5 quick questions</span>${svg('<path d="m9 5 7 7-7 7"/>')}</a>
+
     ${recent.length ? section('Recent', '<button class="link-btn" id="clear-recent">Clear</button>') + `<ul class="chips">${
       recent.map((e) => `<li><a href="#/word/${e.id}" lang="hi">${esc(e.headword)}</a></li>`).join('')}</ul>` : ''}
     ${section('All words', `<span class="meta">${entries.length}</span>`)}
@@ -119,7 +119,7 @@ function renderHome() {
           ? `<button type="button" data-l="${l}" lang="hi" aria-label="Words starting with ${l}">${l}</button>`
           : `<button type="button" lang="hi" disabled aria-label="No words starting with ${l} yet">${l}</button>`)).join('')).join('')}</nav>
       <div class="words">${[...groups].map(([l, list]) =>
-        `<h3 class="group" id="l-${l}" data-l="${l}"><span class="gl" lang="hi">${l}</span><span>Words starting with <span lang="hi">${l}</span></span><small>${list.length}</small></h3>${rows(list)}`).join('')}</div>
+        `<h3 class="group" id="l-${l}" data-l="${l}"><span class="gl" lang="hi">${l}</span><small>${list.length} ${list.length === 1 ? 'word' : 'words'}</small></h3>${rows(list)}`).join('')}</div>
     </div>
     <p class="foot">A Garuda Prakashan dictionary. Works offline.</p>
   </div>`;
@@ -383,6 +383,10 @@ function route() {
   document.title = 'शब्दकोश, Garuda Prakashan';
   const isPage = kind === 'word' || kind === 'saved' || kind === 'practice';
   document.body.classList.toggle('page', isPage);
+  const tab = kind === 'practice' || kind === 'saved' ? kind : kind === 'word' ? null : 'home';
+  for (const a of document.querySelectorAll('.tabbar a')) {
+    if (a.dataset.tab === tab) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+  }
 
   if (kind === 'word') renderWord(Number(arg));
   else if (kind === 'saved') renderSaved();
