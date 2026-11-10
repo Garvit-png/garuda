@@ -56,9 +56,13 @@ const posText = (pos) => {
 const firstLetter = (e) => [...e.headword.normalize('NFC')][0];
 // The वर्णमाला in its traditional order. The sidebar always shows all of it, so the order is
 // obvious; we also sort by it ourselves instead of trusting each browser's Hindi collation.
-const VOWELS = [...'अआइईउऊऋएऐओऔ'];
-const CONSONANTS = [...'कखगघङचछजझञटठडढणतथदधनपफबभमयरलवशषसह'];
-const VARNAMALA = [...VOWELS, ...CONSONANTS];
+// Grouped the traditional way: vowels, then the consonants in their वर्ग (rows of five) and the rest.
+const VARGAS = [
+  ['स्वर', 'Vowels', 'अआइईउऊऋएऐओऔ'],
+  ['व्यंजन', 'Consonants', 'कखगघङ'], [null, null, 'चछजझञ'], [null, null, 'टठडढण'], [null, null, 'तथदधन'],
+  [null, null, 'पफबभम'], [null, null, 'यरलव'], [null, null, 'शषसह'],
+];
+const VARNAMALA = VARGAS.flatMap(([, , letters]) => [...letters]);
 const letterRank = (l) => { const i = VARNAMALA.indexOf(l); return i === -1 ? 999 : i; };
 
 function toast(msg) {
@@ -103,24 +107,21 @@ function renderHome() {
   }
 
   view.innerHTML = `<div class="wrap">
-    <p class="help">Type in Hindi (<b lang="hi">धर्म</b>) or in English letters (<b>dharm</b>). You can also type an English word, like <b>peace</b>.</p>
     ${todayCard()}
-    <a class="practice-link" href="#/practice">
-      <svg viewBox="0 0 64 36" aria-hidden="true" style="width:34px;height:20px">${WING}</svg>
-      <span class="t"><strong>Practice</strong><span>5 quick questions to learn new words</span></span>
-      ${svg('<path d="m9 5 7 7-7 7"/>')}
-    </a>
+    <a class="practice-link" href="#/practice"><span><strong>Practice</strong> 5 quick questions</span>${svg('<path d="m9 5 7 7-7 7"/>')}</a>
     ${recent.length ? section('Recent', '<button class="link-btn" id="clear-recent">Clear</button>') + `<ul class="chips">${
       recent.map((e) => `<li><a href="#/word/${e.id}" lang="hi">${esc(e.headword)}</a></li>`).join('')}</ul>` : ''}
     ${section('All words', `<span class="meta">${entries.length}</span>`)}
     <div class="browse">
-      <nav class="letters" aria-label="Jump to a letter">${VARNAMALA.map((l) => (groups.has(l)
-        ? `<button type="button" data-l="${l}" lang="hi" aria-label="Words starting with ${l}">${l}</button>`
-        : `<button type="button" lang="hi" disabled aria-label="No words starting with ${l} yet">${l}</button>`)
-        + (l === VOWELS.at(-1) ? '<hr>' : '')).join('')}</nav>
+      <nav class="letters" aria-label="Jump to a letter">${VARGAS.map(([hi, en, letters], i) =>
+        (hi ? `${i ? '<hr>' : ''}<span class="lt-label" lang="hi" title="${en}">${hi}</span>` : '<i class="gap" aria-hidden="true"></i>')
+        + [...letters].map((l) => (groups.has(l)
+          ? `<button type="button" data-l="${l}" lang="hi" aria-label="Words starting with ${l}">${l}</button>`
+          : `<button type="button" lang="hi" disabled aria-label="No words starting with ${l} yet">${l}</button>`)).join('')).join('')}</nav>
       <div class="words">${[...groups].map(([l, list]) =>
-        `<h3 class="group" id="l-${l}" data-l="${l}" lang="hi">${l}</h3>${rows(list)}`).join('')}</div>
+        `<h3 class="group" id="l-${l}" data-l="${l}" lang="hi"><span>${l}</span><small>${list.length}</small></h3>${rows(list)}`).join('')}</div>
     </div>
+    <p class="foot">A Garuda Prakashan dictionary. Works offline.</p>
   </div>`;
 
   $('clear-recent')?.addEventListener('click', () => { store.set(RECENT, []); renderHome(); });
@@ -436,7 +437,7 @@ if (Recognition) {
     rec.maxAlternatives = 1;
     micBtn.classList.add('listening');
     input.placeholder = 'Listening… say a word';
-    const done = () => { micBtn.classList.remove('listening'); input.placeholder = 'Type a word in Hindi or English'; };
+    const done = () => { micBtn.classList.remove('listening'); input.placeholder = 'Search: धर्म, dharm or peace'; };
     rec.onresult = (ev) => {
       input.value = ev.results[0][0].transcript.trim();
       input.dispatchEvent(new Event('input'));

@@ -130,12 +130,21 @@ body.page .masthead, body.page .searchbar { display: none; }
 }
 .letters button { color: var(--faint); position: relative; }
 .letters button[aria-current="true"] { color: var(--ink); font-weight: 800; }
-.letters button:disabled { opacity: .3; cursor: default; }
-.letters hr { width: 24px; margin: 6px 8px; border: 0; border-top: 1px solid var(--line); flex: none; }
+.letters button:disabled { opacity: .25; cursor: default; }
+.letters hr { width: 28px; margin: 10px 6px 6px; border: 0; border-top: 1.5px solid var(--gold); opacity: .45; flex: none; }
+.lt-label { flex: none; width: 40px; padding: 2px 0 4px; text-align: center; font-size: 11px; font-weight: 600; color: var(--gold-text); }
+.letters .gap { flex: none; display: block; width: 12px; height: 1px; margin: 5px 14px; background: var(--line); }
 .letters button[aria-current="true"]::before { content: ''; position: absolute; left: 0; top: 10px; bottom: 10px; width: 2px; border-radius: 1px; background: var(--gold); }
 .words { min-width: 0; }
-.group { margin: 0; padding: 14px 0 2px; font-family: var(--serif); font-weight: 800; font-size: 24px; color: var(--accent); scroll-margin-top: calc(var(--search-h) + 4px); }
-.group:first-child { padding-top: 6px; }
+.group {
+  display: flex; align-items: center; gap: 12px; margin: 0; padding: 30px 0 6px;
+  font-family: var(--serif); font-weight: 800; font-size: 24px; color: var(--accent);
+  scroll-margin-top: calc(var(--search-h) - 14px);
+}
+.group::after { content: ''; order: 1; flex: 1; height: 1px; background: var(--gold); opacity: .4; }   /* a line divides each letter */
+.group small { order: 2; font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--faint); }
+.group:first-child { padding-top: 4px; }
+.group + .rows li:first-child .row { padding-top: 6px; }
 
 /* ---------- sentence lookup ---------- */
 .sentence { margin: 0; font-size: 21px; line-height: 1.8; overflow-wrap: anywhere; }
@@ -194,14 +203,10 @@ body.page .masthead, body.page .searchbar { display: none; }
   background: var(--ink); color: var(--bg); padding: 10px 18px; border-radius: 12px; font-size: 14px; z-index: 20; white-space: nowrap;
 }
 /* ---------- home: one-line help, practice ---------- */
-.help { margin: 14px 0 0; font-size: 15px; color: var(--muted); }
-.help b { color: var(--ink); font-weight: 600; }
-.practice-link { display: flex; align-items: center; gap: 14px; margin-top: 12px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 16px; }
-.practice-link:active { background: var(--press); }
-.practice-link .t { flex: 1; }
-.practice-link strong { display: block; font-size: 17px; font-weight: 600; }
-.practice-link span { font-size: 14px; color: var(--muted); }
-.practice-link svg { width: 22px; height: 22px; color: var(--gold); flex: none; }
+.practice-link { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; padding: 12px 2px; font-size: 15px; color: var(--muted); border-bottom: 1px solid var(--line); }
+.practice-link strong { color: var(--ink); font-weight: 600; margin-right: 6px; }
+.practice-link svg { width: 18px; height: 18px; color: var(--gold); }
+.foot { margin: 40px 0 0; text-align: center; font-size: 13px; color: var(--faint); }
 
 /* ---------- practice quiz ---------- */
 .quiz { padding-top: 18px; }
