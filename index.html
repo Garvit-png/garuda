@@ -3,42 +3,51 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>शब्दकोश · Garuda Prakashan</title>
-  <meta name="description" content="Hindi–English dictionary by Garuda Prakashan. Search in Devanagari, Roman spelling or English, or paste a sentence. Works offline.">
+  <title>शब्दकोश, Garuda Prakashan</title>
+  <meta name="description" content="Hindi–English dictionary by Garuda Prakashan. Search in Devanagari, Roman spelling or English. Works offline.">
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#0c1310" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#0f1412" media="(prefers-color-scheme: dark)">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="शब्दकोश">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+Devanagari:wght@600;800&display=swap">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <header class="bar">
-    <div class="wrap">
-      <a class="logo" href="#/" aria-label="Shabdkosh, home">
-        <span class="logo-hi" lang="hi">शब्दकोश</span>
-        <span class="logo-rule" aria-hidden="true"></span>
-        <span class="logo-en">Garuda Prakashan</span>
+  <header class="masthead">
+    <div class="wrap brand-row">
+      <a class="brand" href="#/" aria-label="Shabdkosh home">
+        <span class="brand-hi" lang="hi">शब्दकोश</span>
+        <span class="brand-en">Garuda Prakashan</span>
       </a>
-      <form class="search" role="search" id="search-form">
-        <label for="q" class="sr-only">Search the dictionary</label>
-        <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
-        <input id="q" type="search" name="q" placeholder="Search a word or paste a sentence"
-               autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-               enterkeyhint="search" aria-controls="view">
-        <button type="button" id="clear" class="clear" aria-label="Clear search" hidden>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7 7 17"/></svg>
-        </button>
-      </form>
+      <a class="saved-link" href="#/saved" aria-label="Saved words">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 4h11a1 1 0 0 1 1 1v15l-6.5-4.2L5.5 20V5a1 1 0 0 1 1-1z"/></svg>
+        <span id="saved-count" class="badge" hidden></span>
+      </a>
     </div>
   </header>
 
+  <div class="searchbar" id="searchbar">
+    <form class="wrap search" role="search" id="search-form">
+      <label for="q" class="sr-only">Search the dictionary</label>
+      <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
+      <input id="q" type="search" placeholder="Search धर्म, dharm or duty"
+             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+             enterkeyhint="search" aria-controls="view">
+      <button type="button" id="clear" class="clear" aria-label="Clear search" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg>
+      </button>
+    </form>
+  </div>
+
   <p id="offline" class="offline" hidden>You're offline. Search still works.</p>
 
-  <main id="view" class="wrap" tabindex="-1"></main>
+  <main id="view" tabindex="-1"></main>
 
   <script type="module" src="js/app.js"></script>
 </body>
