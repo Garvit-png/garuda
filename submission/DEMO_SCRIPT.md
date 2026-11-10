@@ -8,7 +8,7 @@ Record on your phone (screen recording), or in Chrome DevTools with device mode 
 | 0:15 | Type `धर्म`, then clear and type `dharma`, then `dharm`, then `dharam` | "Devanagari and three Roman spellings all land on the same entry. `dharam` isn't in the variant list. It matches because every spelling is reduced to a phonetic key." |
 | 0:40 | Type `शान्ति` (with the half न्) | "The data spells it शांति with an anusvara, and many people type the half-n. Generic string matching misses this, and we handle it." |
 | 0:55 | Type `jnaan`, then `gyan` | "ज्ञ is said 'gy' in Hindi, so both IAST-style and spoken spellings work." |
-| 1:05 | Type `prakesh` | "A typo. It shows the closest match and says why: 'Close to prakash'." |
+| 1:05 | Type `prakesh` | "A typo. It shows the closest word, with one line saying it's not an exact match." |
 | 1:15 | Type `peace` | "You can also search English meanings." |
 | 1:25 | Type `bharat` | "A clear no-results state: one line, and a suggestion only when it's genuinely close." |
 | 1:35 | Open धर्म, tap the star (save) and the speaker (listen) | "The detail screen shows every field: IAST, part of speech, meanings, an example with the word in bold, and all spellings." |
