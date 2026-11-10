@@ -1,12 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { buildIndex, search } from '../js/search.js';
-import { normalizeDevanagari, devanagariToIAST, phoneticKey } from '../js/indic.js';
+import { buildIndex, search, findWords } from '../src/lib/search.ts';
+import { normalizeDevanagari, devanagariToIAST, phoneticKey } from '../src/lib/indic.ts';
+import type { Entry } from '../src/lib/types.ts';
 
-const entries = JSON.parse(readFileSync(new URL('../data/entries.json', import.meta.url), 'utf8'));
+const entries: Entry[] = JSON.parse(readFileSync(new URL('../public/data/entries.json', import.meta.url), 'utf8'));
 const index = buildIndex(entries);
-const top = (q) => search(index, q).results[0]?.entry.headword;
+const top = (q: string) => search(index, q).results[0]?.entry.headword;
 
 test('brief example: धर्म, dharma, dharm all return the same entry', () => {
   for (const q of ['धर्म', 'dharma', 'dharm', 'Dharma', '  DHARM  ', 'dharam', 'dharmā']) {
@@ -23,7 +24,7 @@ test('every listed romanised spelling and the IAST find their own entry first', 
 });
 
 test('spellings NOT in the romanised list still work (phonetic key)', () => {
-  const cases = {
+  const cases: Record<string, string> = {
     shaantee: 'शांति', vrksha: 'वृक्ष', jnaan: 'ज्ञान', gyaana: 'ज्ञान', samskrit: 'संस्कृत',
     sanskritee: 'संस्कृति', vishvaas: 'विश्वास', swatantrataa: 'स्वतंत्रता', ahinsaa: 'अहिंसा',
     prakaasha: 'प्रकाश', mandeera: 'मंदिर', chandr: 'चंद्र', kshamaa: 'क्षमा', jeewan: 'जीवन',
@@ -69,7 +70,7 @@ test('Roman prefix while typing', () => {
 });
 
 test('typo tolerance', () => {
-  const cases = {
+  const cases: Record<string, string> = {
     prakesh: 'प्रकाश', vishvash: 'विश्वास', shikhsa: 'शिक्षा', santhi: 'शांति', sanskirti: 'संस्कृति',
     parivra: 'परिवार', bhsha: 'भाषा', atihti: 'अतिथि', dhyna: 'ध्यान', swastiya: 'स्वास्थ्य',
   };
@@ -85,8 +86,8 @@ test('exact match suppresses unrelated fuzzy hits', () => {
 });
 
 test('English reverse lookup', () => {
-  assert.equal(search(index, 'peace').meaningResults[0].entry.headword, 'शांति');
-  assert.equal(search(index, 'tree').meaningResults[0].entry.headword, 'वृक्ष');
+  assert.equal(search(index, 'peace').meaningResults[0]?.entry.headword, 'शांति');
+  assert.equal(search(index, 'tree').meaningResults[0]?.entry.headword, 'वृक्ष');
 });
 
 test('no results: gibberish returns nothing; near-miss returns suggestions', () => {
@@ -119,8 +120,7 @@ test('regressions found while probing', () => {
   assert.ok(v.results.length > 0 && v.suggestions.length === 0);
 });
 
-import { findWords } from '../js/search.js';
-const found = (t) => findWords(index, t).filter((s) => s.entry).map((s) => s.entry.headword);
+const found = (t: string) => findWords(index, t).flatMap((s) => (s.entry ? [s.entry.headword] : []));
 
 test('sentence lookup: finds dictionary words in Hindi and Hinglish text', () => {
   assert.deepEqual(found('shiksha har bachche ka adhikar hai'), ['शिक्षा']);

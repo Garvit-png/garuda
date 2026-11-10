@@ -1,12 +1,10 @@
 // Offline support. The whole app is small, so everything is precached on install.
 // Our own files are network-first: online you always get the latest version,
 // offline you get the cached copy. Fonts are cache-first (they never change).
-const VERSION = 'v17';
+// VERSION and ASSETS are filled in at build time by vite.config.ts (a hash of the built files).
+const VERSION = '__VERSION__';
 const CACHE = `garuda-dict-${VERSION}`;
-const ASSETS = [
-  './', 'index.html', 'css/style.css', 'js/app.js', 'js/search.js', 'js/indic.js', 'js/card.js',
-  'data/entries.json', 'manifest.webmanifest', 'icon.svg',
-];
+const ASSETS = ['__ASSETS__'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));

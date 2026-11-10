@@ -1,7 +1,9 @@
 /* शब्दकोश
-   Light and calm: white page, soft slate-blue ink, a pale sky tint, and Garuda gold for small accents.
-   The brand mark is a line-drawn Garuda wing. No heavy fills; weight and thin gold lines mark what's active. Headwords in a Devanagari serif; everything else in the phone's own font.
-   Screens: Home (recent + every word, letters in a sidebar), Results, Word, Saved. */
+   A phone app: white, royal blue (Vishnu's colour, Garuda's rider) and Garuda gold.
+   The brand mark is a line-drawn Garuda wing (pankh). Headwords in a Devanagari serif;
+   everything else in the phone's own font.
+   Screens: Home (Word of the day, recent, every word with a वर्णमाला sidebar), Results,
+   Word, Practice, Saved; a bottom tab bar ties them together. */
 :root {
   --bg: #ffffff;
   --ink: #1c2541;          /* deep navy text */
@@ -161,17 +163,17 @@ body.page .masthead, body.page .searchbar { display: none; }
 .letters .gap { flex: none; display: block; width: 12px; height: 1px; margin: 5px 14px; background: var(--line); }
 .letters button[aria-current="true"]::before { content: ''; position: absolute; left: 0; top: 10px; bottom: 10px; width: 2px; border-radius: 1px; background: var(--gold); }
 .words { min-width: 0; }
-/* Letter headings look nothing like words: a tinted band in sans-serif with the letter in gold,
-   pinned under the search bar while you scroll through that letter's words. */
+/* Each letter is a <section>. Its heading is sticky *inside* the section, so the next
+   letter pushes it away instead of stacking on top (that stacking looked broken). */
+.letter { padding-top: 20px; scroll-margin-top: calc(var(--search-h) - 16px); }
+.letter:first-child { padding-top: 4px; }
 .group {
   position: sticky; top: var(--search-h); z-index: 2;
   display: flex; align-items: center; gap: 10px;
-  margin: 24px 0 4px; padding: 6px 14px; border-radius: 12px;
+  margin: 0 0 4px; padding: 6px 14px; border-radius: 12px;
   background: var(--sky); box-shadow: 0 0 0 4px var(--bg);   /* hides rows sliding underneath */
   font-family: var(--sans); font-size: 14px; font-weight: 500; color: var(--muted);
-  scroll-margin-top: var(--search-h);
 }
-.group:first-child { margin-top: 4px; }
 .group .gl { font-family: var(--serif); font-size: 36px; font-weight: 800; line-height: 1; padding-top: 10px; color: var(--accent); min-width: 26px; }
 .group small { margin-left: auto; font-size: 13px; color: var(--faint); }
 
@@ -253,6 +255,7 @@ body.page .masthead, body.page .searchbar { display: none; }
 .options button:disabled { cursor: default; }
 .quiz .after { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; min-height: 48px; }
 .quiz .after p { margin: 0; font-size: 15px; color: var(--muted); }
+.quiz .after a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
 .btn { height: 48px; padding: 0 22px; border-radius: 24px; background: var(--ink); color: var(--bg); font-size: 16px; font-weight: 600; display: inline-flex; align-items: center; }
 .btn.ghost { background: none; color: var(--ink); border: 1px solid var(--line); }
 .score { padding: 40px 0 0; text-align: center; }

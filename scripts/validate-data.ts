@@ -1,23 +1,24 @@
-// Checks data/entries.json for the mistakes AI-generated entries typically contain.
+// Checks public/data/entries.json for the mistakes AI-generated entries typically contain.
 // Run: npm run validate   (exits 1 on any error)
 import { readFileSync } from 'node:fs';
-import { devanagariToIAST, normalizeDevanagari, phoneticKey, romanKey, phoneticDistance } from '../js/indic.js';
-import { buildIndex, search } from '../js/search.js';
+import { devanagariToIAST, normalizeDevanagari, phoneticKey, romanKey, phoneticDistance } from '../src/lib/indic.ts';
+import { buildIndex, search } from '../src/lib/search.ts';
+import type { Entry } from '../src/lib/types.ts';
 
-const entries = JSON.parse(readFileSync(new URL('../data/entries.json', import.meta.url), 'utf8'));
-const errors = [];
-const warnings = [];
-const err = (e, msg) => errors.push(`#${e.id} ${e.headword}: ${msg}`);
-const warn = (e, msg) => warnings.push(`#${e.id} ${e.headword}: ${msg}`);
+const entries: Entry[] = JSON.parse(readFileSync(new URL('../public/data/entries.json', import.meta.url), 'utf8'));
+const errors: string[] = [];
+const warnings: string[] = [];
+const err = (e: Entry, msg: string) => errors.push(`#${e.id} ${e.headword}: ${msg}`);
+const warn = (e: Entry, msg: string) => warnings.push(`#${e.id} ${e.headword}: ${msg}`);
 
 const POS = /^(noun \((m|f)\.\)|adjective|verb|adverb|pronoun|indeclinable)$/;
-const FIELDS = ['id', 'headword', 'transliteration', 'romanised', 'pos', 'meanings', 'example'];
+const FIELDS: string[] = ['id', 'headword', 'transliteration', 'romanised', 'pos', 'meanings', 'example'];
 
 if (entries.length < 50) errors.push(`only ${entries.length} entries; brief requires at least 50`);
 
-const seenIds = new Set();
-const seenHeadwords = new Map();
-const spellingOwner = new Map();
+const seenIds = new Set<number>();
+const seenHeadwords = new Map<string, number>();
+const spellingOwner = new Map<string, number>();
 const index = buildIndex(entries);
 
 for (const e of entries) {

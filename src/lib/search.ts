@@ -3,10 +3,11 @@
 
 import {
   hasDevanagari, normalizeDevanagari, devanagariToRoman, romanKey, phoneticKey, phoneticDistance,
-} from './indic.js';
+} from './indic.ts';
+import type { Entry, IndexItem, Match, SearchResult, WordPart } from './types.ts';
 
 /** How many weighted edits we forgive, by length of the query key. */
-export function fuzzyThreshold(len) {
+export function fuzzyThreshold(len: number): number {
   if (len <= 2) return 0;
   if (len === 3) return 0.5; // a full edit on 3 letters turns "ram" into "cam" (क्षमा)
   if (len === 4) return 1;
@@ -14,13 +15,13 @@ export function fuzzyThreshold(len) {
   return 2;
 }
 
-const cleanLatin = (s) => s.normalize('NFC').toLowerCase().replace(/[\s'’.-]+/g, '');
+const cleanLatin = (s: string): string => s.normalize('NFC').toLowerCase().replace(/[\s'’.-]+/g, '');
 
 /** Pre-compute every searchable form of every entry. */
-export function buildIndex(entries) {
+export function buildIndex(entries: Entry[]): IndexItem[] {
   return entries.map((entry) => {
-    const keys = new Map(); // phonetic key -> a human-readable spelling that produced it
-    const add = (key, label) => { if (key && !keys.has(key)) keys.set(key, label); };
+    const keys = new Map<string, string>();
+    const add = (key: string, label: string) => { if (key && !keys.has(key)) keys.set(key, label); };
     add(romanKey(devanagariToRoman(entry.headword)), entry.romanised[0] ?? entry.transliteration);
     add(romanKey(entry.transliteration), entry.transliteration);
     for (const r of entry.romanised) add(romanKey(r), r);
@@ -34,21 +35,15 @@ export function buildIndex(entries) {
 }
 
 /**
- * @returns {{
- *   query: string, key: string, script: 'devanagari'|'latin'|null,
- *   results: Array<{entry, score:number, kind:'exact'|'spelling'|'prefix'|'fuzzy', via:string}>,
- *   meaningResults: Array<{entry, score:number, kind:'meaning', via:string}>,
- *   suggestions: Array<{entry, score:number, kind:'suggestion', via:string}>
- * }}
  * Kinds, best first:
  *   exact    - the query is the headword, the IAST, or a listed romanised spelling
  *   spelling - not listed, but sounds the same (same phonetic key): "dharam", "shaanti", "शान्ति"
  *   prefix   - the user is still typing: "prak" -> प्रकाश
  *   fuzzy    - within a few weighted typos: "prakesh", "vishvash"
  */
-export function search(index, query, { limit = 20 } = {}) {
+export function search(index: IndexItem[], query: string | null | undefined, { limit = 20 } = {}): SearchResult {
   const q = (query ?? '').trim();
-  const empty = { query: q, key: '', script: null, results: [], meaningResults: [], suggestions: [] };
+  const empty: SearchResult = { query: q, key: '', script: null, results: [], meaningResults: [], suggestions: [] };
   if (!q) return empty;
 
   const isDev = hasDevanagari(q);
@@ -58,10 +53,12 @@ export function search(index, query, { limit = 20 } = {}) {
   if (!key && !qDev) return { ...empty, script: isDev ? 'devanagari' : 'latin' };
   const threshold = fuzzyThreshold(key.length);
 
-  const results = [];
+  const results: Match[] = [];
   for (const item of index) {
-    let best = null;
-    const consider = (score, kind, via) => { if (!best || score < best.score) best = { entry: item.entry, score, kind, via }; };
+    let best: Match | null = null;
+    const consider = (score: number, kind: Match['kind'], via: string) => {
+      if (!best || score < best.score) best = { entry: item.entry, score, kind, via };
+    };
 
     if (isDev) {
       if (item.dev === qDev) consider(0, 'exact', item.entry.headword);
@@ -94,7 +91,7 @@ export function search(index, query, { limit = 20 } = {}) {
     .slice(0, limit);
 
   // Reverse lookup: English word -> Hindi headword ("peace" -> शांति)
-  const meaningResults = [];
+  const meaningResults: Match<'meaning'>[] = [];
   if (!isDev && qRaw.length >= 3) {
     const shown = new Set(filtered.map((r) => r.entry.id));
     const word = q.toLowerCase().trim();
@@ -107,10 +104,10 @@ export function search(index, query, { limit = 20 } = {}) {
   }
 
   // Nothing at all: offer the closest few anyway ("did you mean").
-  let suggestions = [];
+  let suggestions: Match<'suggestion'>[] = [];
   if (!filtered.length && !meaningResults.length && key.length >= 3) {
     suggestions = index
-      .map((item) => {
+      .map((item): Match<'suggestion'> => {
         let best = { d: Infinity, via: '' };
         for (const [k, label] of item.keys) {
           const d = phoneticDistance(key, k);
@@ -139,9 +136,8 @@ const SPLIT = /([\s,.;:!?।॥"'“”‘’()[\]{}…–—-]+)/;
  *  - only exact spellings, or same-sound matches of 4+ letters, count.
  *    Hinglish "kal" (tomorrow) must not become कला, nor "mat" (don't) माता.
  *  - no prefix or fuzzy matches.
- * @returns {Array<{text: string, entry: object|null, sep: boolean}>}
  */
-export function findWords(index, text) {
+export function findWords(index: IndexItem[], text: string | null | undefined): WordPart[] {
   return (text ?? '').split(SPLIT).filter((t) => t !== '').map((t) => {
     if (SPLIT.test(t) && !t.replace(SPLIT, '')) return { text: t, entry: null, sep: true };
     const r = search(index, t, { limit: 1 }).results[0];
@@ -151,4 +147,4 @@ export function findWords(index, text) {
 }
 
 /** True when the input looks like a phrase or sentence rather than one word. */
-export const isSentence = (text) => (text ?? '').trim().split(/\s+/).length >= 2;
+export const isSentence = (text: string | null | undefined): boolean => (text ?? '').trim().split(/\s+/).length >= 2;
