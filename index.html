@@ -26,10 +26,13 @@
         <span class="brand-hi" lang="hi">शब्दकोश</span>
         <span class="brand-en">Garuda Prakashan</span>
       </a>
+      <div class="head-actions">
+      <button type="button" class="size-btn" id="size" aria-pressed="false" aria-label="Bigger text">Aa</button>
       <a class="saved-link" href="#/saved" aria-label="Saved words">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 4h11a1 1 0 0 1 1 1v15l-6.5-4.2L5.5 20V5a1 1 0 0 1 1-1z"/></svg>
         <span id="saved-count" class="badge" hidden></span>
       </a>
+      </div>
     </div>
   </header>
 
@@ -37,9 +40,12 @@
     <form class="wrap search" role="search" id="search-form">
       <label for="q" class="sr-only">Search the dictionary</label>
       <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
-      <input id="q" type="search" placeholder="Search धर्म, dharm or duty"
+      <input id="q" type="search" placeholder="Type a word in Hindi or English"
              autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
              enterkeyhint="search" aria-controls="view">
+      <button type="button" id="mic" class="mic" aria-label="Search by voice" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5"/></svg>
+      </button>
       <button type="button" id="clear" class="clear" aria-label="Clear search" hidden>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg>
       </button>

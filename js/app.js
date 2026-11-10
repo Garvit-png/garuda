@@ -63,7 +63,7 @@ function toast(msg) {
 }
 
 const row = (e) => `<li><a class="row" href="#/word/${e.id}">
-  <span class="row-top"><span class="hw" lang="hi">${esc(e.headword)}</span><span class="tr">${esc(e.transliteration)}</span></span>
+  <span class="row-top"><span class="hw" lang="hi">${esc(e.headword)}</span><span class="tr">${esc(e.romanised[0])}</span></span>
   <span class="gloss">${esc(e.meanings.join(', '))}</span></a></li>`;
 const rows = (list) => `<ul class="rows">${list.map(row).join('')}</ul>`;
 const section = (title, right = '') => `<div class="section"><h2>${title}</h2>${right}</div>`;
@@ -81,7 +81,7 @@ function todayCard() {
     <svg class="wing-bg" viewBox="0 0 64 36" aria-hidden="true">${WING}</svg>
     <p class="kicker"><span lang="hi">आज का शब्द</span><span class="date">${date}</span></p>
     <span class="hw" lang="hi">${esc(e.headword)}</span>
-    <p class="tr">${esc(e.transliteration)}</p>
+    <p class="tr">${esc(e.romanised[0])}</p>
     <p class="mean">${esc(e.meanings.join(', '))}</p>
   </a>`;
 }
@@ -97,7 +97,13 @@ function renderHome() {
   }
 
   view.innerHTML = `<div class="wrap">
+    <p class="help">Type in Hindi (<b lang="hi">धर्म</b>) or in English letters (<b>dharm</b>). You can also type an English word, like <b>peace</b>.</p>
     ${todayCard()}
+    <a class="practice-link" href="#/practice">
+      <svg viewBox="0 0 64 36" aria-hidden="true" style="width:34px;height:20px">${WING}</svg>
+      <span class="t"><strong>Practice</strong><span>5 quick questions to learn new words</span></span>
+      ${svg('<path d="m9 5 7 7-7 7"/>')}
+    </a>
     ${recent.length ? section('Recent', '<button class="link-btn" id="clear-recent">Clear</button>') + `<ul class="chips">${
       recent.map((e) => `<li><a href="#/word/${e.id}" lang="hi">${esc(e.headword)}</a></li>`).join('')}</ul>` : ''}
     ${section('All words', `<span class="meta">${entries.length}</span>`)}
@@ -155,6 +161,55 @@ function renderHome() {
     removeEventListener('wheel', unpin);
   };
   spy();
+}
+
+// ---------- Practice: 5 questions, pick the meaning ----------
+const shuffle = (a) => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+function renderPractice() {
+  const ROUNDS = 5;
+  // saved words first (if you have enough), topped up with others
+  const savedList = store.get(SAVED).map((id) => byId.get(id)).filter(Boolean);
+  const pool = shuffle(savedList).concat(shuffle(entries.filter((e) => !savedList.includes(e))));
+  const questions = pool.slice(0, ROUNDS);
+  let n = 0;
+  let score = 0;
+
+  const show = () => {
+    if (n === ROUNDS) {
+      view.innerHTML = `${topbar('Practice', '', '#/')}<div class="wrap score">
+        <p class="big">${score} / ${ROUNDS}</p>
+        <p>${score === ROUNDS ? 'All correct. Well done!' : score >= 3 ? 'Good going. Try another round.' : 'Keep practising, it gets easier.'}</p>
+        <div class="actions"><button class="btn" id="again">Play again</button><a class="btn ghost" href="#/">Home</a></div></div>`;
+      $('again').onclick = renderPractice;
+      return;
+    }
+    const e = questions[n];
+    const wrongs = shuffle(entries.filter((x) => x !== e && x.meanings[0] !== e.meanings[0])).slice(0, 3);
+    const options = shuffle([e, ...wrongs]);
+    view.innerHTML = `${topbar('Practice', '', '#/')}<div class="wrap quiz">
+      <div class="progress" aria-label="Question ${n + 1} of ${ROUNDS}">${Array.from({ length: ROUNDS }, (_, i) => `<i class="${i < n ? 'done' : ''}"></i>`).join('')}</div>
+      <p class="ask">What does this word mean?</p>
+      <p class="q" lang="hi">${esc(e.headword)}</p>
+      <p class="q-tr">${esc(e.romanised[0])}</p>
+      <ul class="options">${options.map((o) => `<li><button data-id="${o.id}">${esc(o.meanings[0])}</button></li>`).join('')}</ul>
+      <div class="after" id="after" aria-live="polite"></div></div>`;
+    view.querySelector('.options').addEventListener('click', (ev) => {
+      const b = ev.target.closest('button');
+      if (!b || b.disabled) return;
+      const ok = Number(b.dataset.id) === e.id;
+      if (ok) score++;
+      for (const x of view.querySelectorAll('.options button')) {
+        x.disabled = true;
+        if (Number(x.dataset.id) === e.id) x.classList.add('right');
+      }
+      if (!ok) b.classList.add('wrong');
+      $('after').innerHTML = `<p>${ok ? 'Correct!' : `It means “${esc(e.meanings.join(', '))}”.`} <a href="#/word/${e.id}" style="text-decoration:underline">See word</a></p>
+        <button class="btn" id="next">${n === ROUNDS - 1 ? 'See score' : 'Next'}</button>`;
+      $('next').onclick = () => { n++; show(); };
+      $('next').focus();
+    });
+  };
+  show();
 }
 
 // ---------- Results ----------
@@ -242,17 +297,17 @@ function renderWord(id) {
     <article class="wrap word">
       <h1 lang="hi">${esc(e.headword)}</h1>
       ${canSpeak
-        ? `<button class="say" id="say" aria-label="Hear ${esc(e.transliteration)}">/${esc(e.transliteration)}/ ${icon.speaker}</button>`
-        : `<p class="say">/${esc(e.transliteration)}/</p>`}
-      <p class="pos">${esc(posText(e.pos))}</p>
+        ? `<button class="say" id="say" aria-label="Hear it said">${esc(e.romanised[0])} ${icon.speaker}</button>`
+        : `<p class="say">${esc(e.romanised[0])}</p>`}
+      <p class="pos">${esc(posText(e.pos))} <span class="iast">(IAST: ${esc(e.transliteration)})</span></p>
 
       ${section('Meaning')}
       <ol class="senses">${e.meanings.map((m) => `<li>${esc(m)}</li>`).join('')}</ol>
 
-      ${section('Example')}
+      ${section('Example sentence')}
       <p class="example" lang="hi">${exampleHtml(e)}</p>
 
-      ${section('Also typed as')}
+      ${section('Other spellings')}
       <ul class="spellings">${e.romanised.map((r) => `<li>${esc(r)}</li>`).join('')}</ul>
 
       <nav class="pager" aria-label="Neighbouring words">
@@ -316,11 +371,12 @@ function route() {
   const [, kind, ...rest] = hash.split('/');
   const arg = rest.join('/');
   document.title = 'शब्दकोश, Garuda Prakashan';
-  const isPage = kind === 'word' || kind === 'saved';
+  const isPage = kind === 'word' || kind === 'saved' || kind === 'practice';
   document.body.classList.toggle('page', isPage);
 
   if (kind === 'word') renderWord(Number(arg));
   else if (kind === 'saved') renderSaved();
+  else if (kind === 'practice') renderPractice();
   else {
     const q = kind === 'q' ? arg : '';
     if (input.value !== q) input.value = q;
@@ -328,6 +384,7 @@ function route() {
     if (q.trim()) renderResults(q); else renderHome();
   }
   clearBtn.hidden = !input.value;
+  micBtn.hidden = !Recognition || !!input.value;
   window.scrollTo(0, 0);
 }
 
@@ -358,6 +415,43 @@ view.addEventListener('touchstart', () => { if (document.activeElement === input
 // hairline under the search bar once content scrolls beneath it
 addEventListener('scroll', () => searchbar.classList.toggle('stuck', scrollY > 60), { passive: true });
 addEventListener('hashchange', route);
+
+// ---------- voice search (Chrome on Android, Safari) ----------
+const micBtn = $('mic');
+const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (Recognition) {
+  micBtn.addEventListener('click', () => {
+    const rec = new Recognition();
+    rec.lang = 'hi-IN';               // understands Hindi; returns Devanagari, which search handles
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+    micBtn.classList.add('listening');
+    input.placeholder = 'Listening… say a word';
+    const done = () => { micBtn.classList.remove('listening'); input.placeholder = 'Type a word in Hindi or English'; };
+    rec.onresult = (ev) => {
+      input.value = ev.results[0][0].transcript.trim();
+      input.dispatchEvent(new Event('input'));
+    };
+    rec.onerror = (ev) => { if (ev.error === 'not-allowed') toast('Allow the microphone to search by voice'); };
+    rec.onend = done;
+    try { rec.start(); } catch { done(); }
+  });
+}
+
+// ---------- bigger text (remembered on this device) ----------
+const sizeBtn = $('size');
+const setLarge = (on) => {
+  document.body.classList.toggle('large', on);
+  sizeBtn.setAttribute('aria-pressed', on);
+  sizeBtn.setAttribute('aria-label', on ? 'Normal text size' : 'Bigger text');
+};
+setLarge(store.get('garuda.large') === true);
+sizeBtn.addEventListener('click', () => {
+  const on = !document.body.classList.contains('large');
+  setLarge(on);
+  store.set('garuda.large', on);
+  toast(on ? 'Bigger text on' : 'Normal text size');
+});
 
 // ---------- offline ----------
 const updateNet = () => { $('offline').hidden = navigator.onLine; };
