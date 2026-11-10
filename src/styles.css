@@ -15,6 +15,9 @@
   --gold: #d08a1c;         /* amber: marks only */
   --gold-text: #a8650c;    /* amber readable at small sizes */
   --press: #f5f6fa;        /* tap feedback only */
+  --paper: #fcfcfe;        /* the page: near-white graph paper */
+  --grid: rgb(51 70 176 / .07);  /* faint indigo grid lines */
+  --surface: #ffffff;      /* cards on the paper */
   --tabbar: 62px;
   --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --deva: 'Kohinoor Devanagari', 'Noto Sans Devanagari', 'Nirmala UI', 'Mangal', var(--sans);
@@ -26,14 +29,25 @@
   :root {
     --bg: #0f1222; --ink: #eceef8; --muted: #a6abc4; --faint: #646a86; --line: #232741;
     --field: #0f1222; --accent: #9aa8ff; --gold: #f0aa3a; --gold-text: #f3bd5e; --press: #181c33;
+    --paper: #0d1020; --grid: rgb(255 255 255 / .035); --surface: #141831;
     color-scheme: dark;
   }
 }
 
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
+/* Graph-paper page. The same fixed background is reused on the sticky bars,
+   so the grid lines line up and the bars blend into the page. */
+html, .searchbar, .topbar, .group {
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 22px 22px;
+  background-attachment: fixed;
+}
 body {
-  margin: 0; background: var(--bg); color: var(--ink);
+  margin: 0; background: transparent; color: var(--ink);
   font: 16px/1.5 var(--sans);
   -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
 }
@@ -63,7 +77,7 @@ body.large main { zoom: 1.15; }
 }
 
 /* ---------- search (sticks to the top) ---------- */
-.searchbar { position: sticky; top: 0; z-index: 10; background: var(--bg); height: var(--search-h); padding-top: 8px; border-bottom: 1px solid transparent; }
+.searchbar { position: sticky; top: 0; z-index: 10; height: var(--search-h); padding-top: 8px; border-bottom: 1px solid transparent; }
 .searchbar.stuck { border-bottom-color: var(--line); }
 .search { position: relative; }
 .search input {
@@ -106,10 +120,9 @@ body { display: flex; flex-direction: column; min-height: 100vh; min-height: 100
 
 /* on a laptop, show it as a phone-width app in the middle of the screen */
 @media (min-width: 600px) {
-  html { background: #f1f2f7; }
-  body { max-width: 430px; margin: 0 auto; box-shadow: 0 0 0 1px var(--line), 0 20px 60px rgb(28 37 65 / .12); }
+  body { max-width: 440px; margin: 0 auto; }
+  .tabbar { border-left: 1px solid var(--line); border-right: 1px solid var(--line); border-radius: 18px 18px 0 0; }
 }
-@media (min-width: 600px) and (prefers-color-scheme: dark) { html { background: #080b17; } }
 
 /* word and saved screens have their own top bar */
 body.page .masthead, body.page .searchbar { display: none; }
@@ -122,7 +135,11 @@ body.page .masthead, body.page .searchbar { display: none; }
 .note { margin: 14px 0 4px; font-size: 14px; color: var(--muted); }
 .note b { color: var(--ink); font-weight: 600; }
 
-.rows { list-style: none; margin: 0; padding: 0; }
+.rows {
+  list-style: none; margin: 0; padding: 0 14px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+  box-shadow: 0 1px 2px rgb(27 31 59 / .04);
+}
 .rows li + li { border-top: 1px solid var(--line); }
 .row { display: block; padding: 11px 0; }
 .row:active { background: var(--press); }
@@ -135,7 +152,7 @@ body.page .masthead, body.page .searchbar { display: none; }
 .chips::-webkit-scrollbar { display: none; }
 .chips a {
   flex: none; display: inline-flex; align-items: center; height: 38px; padding: 0 16px; border-radius: 19px;
-  border: 1px solid var(--line); font-family: var(--serif); font-weight: 600; font-size: 17px; color: var(--accent);
+  border: 1px solid var(--line); background: var(--surface); font-family: var(--serif); font-weight: 600; font-size: 17px; color: var(--accent);
 }
 .chips a:active { background: var(--press); }
 
@@ -168,15 +185,14 @@ body.page .masthead, body.page .searchbar { display: none; }
 .group {
   position: sticky; top: var(--search-h); z-index: 2;
   display: flex; align-items: baseline; gap: 10px;
-  margin: 0; padding: 10px 0 6px;
-  background: var(--bg); border-bottom: 1px solid var(--line);
+  margin: 0 0 6px; padding: 10px 2px 4px;
   font-size: 13px; color: var(--faint);
 }
 .group .gl { font-family: var(--serif); font-size: 34px; font-weight: 800; line-height: 1.1; color: var(--gold-text); min-width: 26px; }
 .group small { margin-left: auto; font-size: 13px; color: var(--faint); }
 
 /* ---------- sentence lookup ---------- */
-.sentence { margin: 0; font-size: 21px; line-height: 1.8; overflow-wrap: anywhere; }
+.sentence { margin: 0; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; font-size: 21px; line-height: 1.8; overflow-wrap: anywhere; }
 .sentence a { color: var(--accent); font-weight: 700; text-decoration: underline; text-decoration-color: var(--gold); text-decoration-thickness: 2px; text-underline-offset: 6px; }
 
 /* ---------- no results / empty ---------- */
@@ -189,7 +205,7 @@ body.page .masthead, body.page .searchbar { display: none; }
 
 /* ---------- top bar on word / saved ---------- */
 .topbar {
-  position: sticky; top: 0; z-index: 10; background: var(--bg);
+  position: sticky; top: 0; z-index: 10;
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
   padding: env(safe-area-inset-top) 10px 0; border-bottom: 1px solid var(--line);
 }
@@ -201,7 +217,11 @@ body.page .masthead, body.page .searchbar { display: none; }
 .topbar .actions { display: flex; }
 
 /* ---------- word ---------- */
-.word { padding-top: 18px; }
+article.word {
+  margin: 14px 12px 0; padding: 22px 18px 6px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 22px;
+  box-shadow: 0 1px 2px rgb(27 31 59 / .04);
+}
 .word h1 { margin: 0; font-family: var(--serif); font-weight: 800; font-size: 54px; line-height: 1.2; overflow-wrap: anywhere; }
 .say { display: inline-flex; align-items: center; gap: 8px; margin-top: 2px; padding: 6px 0; font-size: 19px; color: var(--accent); }
 .say svg { width: 22px; height: 22px; }
@@ -219,7 +239,7 @@ body.page .masthead, body.page .searchbar { display: none; }
 .example b { font-weight: 700; }
 .example a { color: var(--accent); text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 4px; }
 .spellings { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.spellings li { padding: 4px 12px; border-radius: 8px; border: 1px solid var(--line); font-size: 15px; color: var(--ink); }
+.spellings li { padding: 4px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); font-size: 15px; color: var(--ink); }
 
 .pager { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 34px; padding-top: 16px; border-top: 1px solid var(--line); }
 .pager a { display: flex; flex-direction: column; padding: 10px 0; }
@@ -268,7 +288,8 @@ body.page .masthead, body.page .searchbar { display: none; }
 /* ---------- आज का शब्द: word of the day ---------- */
 .today {
   position: relative; overflow: hidden; display: block; margin-top: 14px; padding: 16px 18px 18px;
-  background: var(--bg); border: 1px solid var(--line); border-radius: 20px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 20px;
+  box-shadow: 0 1px 2px rgb(27 31 59 / .04);
 }
 .today:active { background: var(--press); }
 .today .kicker { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 13px; color: var(--gold-text); }
