@@ -40,6 +40,7 @@ Claude Code then worked in small steps and committed after each one. The commit 
 | 13 | Second design used a red accent and an English-only title | **My feedback: the colour felt off and the titles still looked AI-made. I asked for white and green, a design of its own, and an extra feature others wouldn't build.** | White and deep green. Gave the app an identity based on the shirorekha (the wordmark's headline extends into a rule), bilingual labels, and a वर्णमाला letter index. Added sentence lookup and share-as-image. |
 | 14 | Sentence lookup first used the normal search, prefix and fuzzy included | That would underline random Hinglish words ("kal" → कला, "mat" → माता) | Only exact or 4+ letter same-sound matches count. Tested against about 90 everyday Hinglish words: no false highlights. Documented the one remaining ambiguity (`kala`). |
 | 15 | A comment in `card.js` described a rule above the headword that the code never draws | The comment didn't match the code | Fixed the comment |
+| 16 | Third design: shirorekha logo, bilingual labels, tinted boxes | **My feedback: I shared a screenshot of a native phone dictionary and asked for a complete, clean redesign in white and green.** | Rebuilt the whole UI on that layout: a large serif title that folds away during search, a big serif headword, the IAST in green (tap to hear), a two-part POS label, linked words in the example, and Spellings and Nearby columns. Redrew the share card and icon to match, and checked everything in phone-size screenshots. |
 
 ## How facts, sources and code were checked
 
