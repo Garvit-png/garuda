@@ -124,12 +124,14 @@ body.page .masthead, body.page .searchbar { display: none; }
 }
 .letters::-webkit-scrollbar { display: none; }
 .letters button {
-  flex: none; width: 40px; height: 40px; border-radius: 12px;
+  flex: none; width: 40px; height: 38px; border-radius: 12px;
   font-family: var(--serif); font-weight: 600; font-size: 18px; color: var(--muted);
   transition: background .15s, color .15s;
 }
 .letters button { color: var(--faint); position: relative; }
 .letters button[aria-current="true"] { color: var(--ink); font-weight: 800; }
+.letters button:disabled { opacity: .3; cursor: default; }
+.letters hr { width: 24px; margin: 6px 8px; border: 0; border-top: 1px solid var(--line); flex: none; }
 .letters button[aria-current="true"]::before { content: ''; position: absolute; left: 0; top: 10px; bottom: 10px; width: 2px; border-radius: 1px; background: var(--gold); }
 .words { min-width: 0; }
 .group { margin: 0; padding: 14px 0 2px; font-family: var(--serif); font-weight: 800; font-size: 24px; color: var(--accent); scroll-margin-top: calc(var(--search-h) + 4px); }

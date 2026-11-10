@@ -54,6 +54,12 @@ const posText = (pos) => {
   return m ? `${m[1]}, ${GENDER[m[2]] ?? m[2]}` : pos;
 };
 const firstLetter = (e) => [...e.headword.normalize('NFC')][0];
+// The वर्णमाला in its traditional order. The sidebar always shows all of it, so the order is
+// obvious; we also sort by it ourselves instead of trusting each browser's Hindi collation.
+const VOWELS = [...'अआइईउऊऋएऐओऔ'];
+const CONSONANTS = [...'कखगघङचछजझञटठडढणतथदधनपफबभमयरलवशषसह'];
+const VARNAMALA = [...VOWELS, ...CONSONANTS];
+const letterRank = (l) => { const i = VARNAMALA.indexOf(l); return i === -1 ? 999 : i; };
 
 function toast(msg) {
   document.querySelector('.toast')?.remove();
@@ -108,8 +114,10 @@ function renderHome() {
       recent.map((e) => `<li><a href="#/word/${e.id}" lang="hi">${esc(e.headword)}</a></li>`).join('')}</ul>` : ''}
     ${section('All words', `<span class="meta">${entries.length}</span>`)}
     <div class="browse">
-      <nav class="letters" aria-label="Jump to a letter">${[...groups.keys()].map((l) =>
-        `<button type="button" data-l="${l}" lang="hi" aria-label="Words starting with ${l}">${l}</button>`).join('')}</nav>
+      <nav class="letters" aria-label="Jump to a letter">${VARNAMALA.map((l) => (groups.has(l)
+        ? `<button type="button" data-l="${l}" lang="hi" aria-label="Words starting with ${l}">${l}</button>`
+        : `<button type="button" lang="hi" disabled aria-label="No words starting with ${l} yet">${l}</button>`)
+        + (l === VOWELS.at(-1) ? '<hr>' : '')).join('')}</nav>
       <div class="words">${[...groups].map(([l, list]) =>
         `<h3 class="group" id="l-${l}" data-l="${l}" lang="hi">${l}</h3>${rows(list)}`).join('')}</div>
     </div>
@@ -128,9 +136,10 @@ function renderHome() {
     for (const b of side.children) {
       if (b.dataset.l !== l) { b.removeAttribute('aria-current'); continue; }
       b.setAttribute('aria-current', 'true');
-      const top = b.offsetTop - side.offsetTop;   // keep it visible inside the sidebar
-      if (top < side.scrollTop + 8) side.scrollTop = top - 8;
-      else if (top + b.offsetHeight > side.scrollTop + side.clientHeight - 24) side.scrollTop = top + b.offsetHeight - side.clientHeight + 24;
+      // keep the lit letter in the middle of the sidebar, so it's always visible
+      const br = b.getBoundingClientRect();
+      const sr = side.getBoundingClientRect();
+      side.scrollTo({ top: side.scrollTop + (br.top + br.height / 2) - (sr.top + sr.height / 2), behavior: 'smooth' });
     }
   };
   const spy = () => {
@@ -471,7 +480,8 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.ser
   }
   index = buildIndex(entries);
   byId = new Map(entries.map((e) => [e.id, e]));
-  sorted = [...entries].sort((a, b) => a.headword.localeCompare(b.headword, 'hi'));
+  sorted = [...entries].sort((a, b) =>
+    (letterRank(firstLetter(a)) - letterRank(firstLetter(b))) || a.headword.localeCompare(b.headword, 'hi'));
   updateSavedCount();
   updateNet();
   route();
