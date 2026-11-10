@@ -1,4 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#2c3a8c"/>
-  <text x="256" y="372" text-anchor="middle" font-family="'Noto Serif Devanagari','Kohinoor Devanagari',serif" font-size="280" font-weight="800" fill="#ffffff">श</text>
+  <rect width="512" height="512" rx="112" fill="#ffffff"/>
+  <rect x="6" y="6" width="500" height="500" rx="106" fill="none" stroke="#e8e8ea" stroke-width="12"/>
+  <text x="256" y="372" text-anchor="middle" font-family="'Noto Serif Devanagari','Kohinoor Devanagari',serif" font-size="280" font-weight="800" fill="#1d1d1f">श</text>
 </svg>

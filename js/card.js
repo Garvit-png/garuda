@@ -1,10 +1,9 @@
 // "Share as image": draws a 1080×1350 word card (Instagram/WhatsApp portrait size)
 // on a canvas. For a publisher, every shared card is free, branded reach.
 
-const GREEN = '#2c3a8c'; // indigo (brand)
-const INK = '#1a1d33';
-const MUTED = '#666b82';
-const LINE = '#e8e9f0';
+const INK = '#1d1d1f';
+const MUTED = '#6e6e73';
+const LINE = '#e8e8ea';
 const SERIF_DEVA = "'Noto Serif Devanagari', 'Kohinoor Devanagari', serif";
 const DEVA = "'Kohinoor Devanagari', 'Noto Sans Devanagari', 'Nirmala UI', 'Mangal', sans-serif";
 const LATIN = "-apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
@@ -48,27 +47,16 @@ export async function makeCard(entry, url = '') {
   ctx.fillText(entry.headword, X - 6, 280 + size);
   let y = 280 + size + 90;
 
-  ctx.font = `48px ${LATIN}`;
-  ctx.fillStyle = GREEN;
-  ctx.fillText(`/${entry.transliteration}/`, X, y);
-  y += 50;
-
-  // Part of speech as a segmented label
+  // Pronunciation and part of speech: plain grey text, no fills
   const parts = entry.pos.match(/^(\S+)\s*\((.+)\)$/);
-  const segs = parts ? [parts[1], { 'f.': 'feminine', 'm.': 'masculine' }[parts[2]] ?? parts[2]] : [entry.pos];
-  ctx.font = `34px ${LATIN}`;
-  let sx = X;
-  const segH = 64;
-  ctx.lineWidth = 3; ctx.strokeStyle = GREEN;
-  segs.forEach((t, i) => {
-    const w = ctx.measureText(t).width + 56;
-    if (i === 0) { ctx.fillStyle = GREEN; ctx.fillRect(sx, y, w, segH); }
-    ctx.strokeRect(sx, y, w, segH);
-    ctx.fillStyle = i === 0 ? '#ffffff' : GREEN;
-    ctx.fillText(t, sx + 28, y + 44);
-    sx += w;
-  });
-  y += segH + 100;
+  const pos = parts ? `${parts[1]}, ${{ 'f.': 'feminine', 'm.': 'masculine' }[parts[2]] ?? parts[2]}` : entry.pos;
+  ctx.font = `48px ${LATIN}`;
+  ctx.fillStyle = MUTED;
+  ctx.fillText(`/${entry.transliteration}/`, X, y);
+  y += 64;
+  ctx.font = `38px ${LATIN}`;
+  ctx.fillText(pos, X, y);
+  y += 120;
 
   // Meanings
   ctx.font = `500 52px ${LATIN}`;
@@ -93,8 +81,7 @@ export async function makeCard(entry, url = '') {
   }
 
   // Footer
-  ctx.fillStyle = '#f4b21f';            // marigold base bar
-  ctx.fillRect(0, H - 16, W, 16);
+
   ctx.fillStyle = LINE;
   ctx.fillRect(X, H - 150, MAX, 2);
   ctx.font = `500 34px ${LATIN}`;

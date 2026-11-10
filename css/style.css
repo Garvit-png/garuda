@@ -1,19 +1,15 @@
 /* शब्दकोश
-   White page, deep indigo ink-blue for the brand, marigold for what's active. Headwords in a Devanagari serif; everything else in the phone's own font.
+   Minimal: white page, black ink, greys and hairlines. No colour fills; weight and underline mark what's active. Headwords in a Devanagari serif; everything else in the phone's own font.
    Screens: Home (recent + every word, letters in a sidebar), Results, Word, Saved. */
 :root {
   --bg: #ffffff;
-  --ink: #1a1d33;
-  --muted: #666b82;
-  --faint: #a2a6b8;
-  --line: #e8e9f0;
-  --field: #f4f5f9;
-  --accent: #2c3a8c;        /* indigo */
-  --accent-soft: #eceefa;
-  --gold: #f4b21f;          /* marigold */
-  --gold-soft: #fdf2d6;
-  --on-gold: #1a1d33;
-  --press: #f6f6fa;
+  --ink: #1d1d1f;
+  --muted: #6e6e73;
+  --faint: #aeaeb2;
+  --line: #e8e8ea;
+  --field: #ffffff;
+  --accent: #1d1d1f;
+  --press: #f6f6f7;
   --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --deva: 'Kohinoor Devanagari', 'Noto Sans Devanagari', 'Nirmala UI', 'Mangal', var(--sans);
   --serif: 'Noto Serif Devanagari', 'Kohinoor Devanagari', var(--deva);
@@ -22,8 +18,8 @@
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #11131f; --ink: #e9eaf3; --muted: #a0a4bb; --faint: #6a6e86; --line: #23263a;
-    --field: #1a1d2d; --accent: #9aa8ff; --accent-soft: #23284a; --gold: #f4b21f; --gold-soft: #3a3020; --press: #181b2a;
+    --bg: #161617; --ink: #f2f2f3; --muted: #a1a1a6; --faint: #636366; --line: #2c2c2e;
+    --field: #161617; --accent: #f2f2f3; --press: #1f1f21;
     color-scheme: dark;
   }
 }
@@ -54,7 +50,7 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 .saved-link svg { width: 24px; height: 24px; }
 .badge {
   position: absolute; top: 5px; right: 4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
-  background: var(--gold); color: var(--on-gold); font-size: 11px; font-weight: 700; line-height: 18px; text-align: center;
+  background: var(--bg); color: var(--ink); border: 1px solid var(--ink); font-size: 10px; font-weight: 700; line-height: 16px; text-align: center;
 }
 
 /* ---------- search (sticks to the top) ---------- */
@@ -64,17 +60,17 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 .search input {
   width: 100%; height: 48px; padding: 0 46px 0 46px;
   font: 17px var(--sans); color: var(--ink);       /* 17px: iOS won't zoom in */
-  background: var(--field); border: 1.5px solid var(--field); border-radius: 14px;
+  background: var(--field); border: 1px solid var(--line); border-radius: 12px;
   -webkit-appearance: none; appearance: none; transition: border-color .15s, background .15s;
 }
 .search input::placeholder { color: var(--faint); }
 .search input::-webkit-search-cancel-button { display: none; }
-.search input:focus { outline: none; border-color: var(--accent); background: var(--bg); box-shadow: 0 0 0 4px var(--accent-soft); }
-.search-icon { position: absolute; left: 35px; top: 14px; width: 20px; height: 20px; color: var(--accent); pointer-events: none; }
+.search input:focus { outline: none; border-color: var(--ink); }
+.search-icon { position: absolute; left: 35px; top: 14px; width: 20px; height: 20px; color: var(--muted); pointer-events: none; }
 .clear { position: absolute; right: 22px; top: 2px; width: 44px; height: 44px; display: grid; place-items: center; color: var(--muted); }
 .clear svg { width: 18px; height: 18px; }
 
-.offline { margin: 0; padding: 8px 20px; text-align: center; font-size: 13px; color: var(--accent); background: var(--accent-soft); }
+.offline { margin: 0; padding: 8px 20px; text-align: center; font-size: 13px; color: var(--muted); border-bottom: 1px solid var(--line); }
 main { padding-bottom: calc(48px + env(safe-area-inset-bottom)); outline: none; }
 
 /* word and saved screens have their own top bar */
@@ -84,7 +80,7 @@ body.page .masthead, body.page .searchbar { display: none; }
 .section { display: flex; align-items: baseline; justify-content: space-between; margin: 22px 0 8px; }
 .section h2 { margin: 0; font-size: 15px; font-weight: 600; color: var(--ink); }
 .section .meta { font-size: 14px; color: var(--muted); }
-.link-btn { font-size: 14px; color: var(--accent); padding: 6px 0; }
+.link-btn { font-size: 14px; color: var(--muted); padding: 6px 0; text-decoration: underline; text-underline-offset: 3px; }
 .note { margin: 14px 0 4px; font-size: 14px; color: var(--muted); }
 .note b { color: var(--ink); font-weight: 600; }
 
@@ -103,7 +99,7 @@ body.page .masthead, body.page .searchbar { display: none; }
   flex: none; display: inline-flex; align-items: center; height: 38px; padding: 0 16px; border-radius: 19px;
   border: 1px solid var(--line); font-family: var(--serif); font-weight: 600; font-size: 17px;
 }
-.chips a:active { background: var(--accent-soft); border-color: var(--accent-soft); }
+.chips a:active { background: var(--press); }
 
 /* ---------- home: letters on the left, words on the right ---------- */
 .browse { display: grid; grid-template-columns: 44px 1fr; gap: 0 18px; }
@@ -119,22 +115,24 @@ body.page .masthead, body.page .searchbar { display: none; }
   font-family: var(--serif); font-weight: 600; font-size: 18px; color: var(--muted);
   transition: background .15s, color .15s;
 }
-.letters button[aria-current="true"] { background: var(--gold); color: var(--on-gold); font-weight: 800; }
+.letters button { color: var(--faint); position: relative; }
+.letters button[aria-current="true"] { color: var(--ink); font-weight: 800; }
+.letters button[aria-current="true"]::before { content: ''; position: absolute; left: 0; top: 10px; bottom: 10px; width: 2px; border-radius: 1px; background: var(--ink); }
 .words { min-width: 0; }
 .group { margin: 0; padding: 14px 0 2px; font-family: var(--serif); font-weight: 800; font-size: 24px; color: var(--accent); scroll-margin-top: calc(var(--search-h) + 4px); }
 .group:first-child { padding-top: 6px; }
 
 /* ---------- sentence lookup ---------- */
 .sentence { margin: 0; font-size: 21px; line-height: 1.8; overflow-wrap: anywhere; }
-.sentence a { color: var(--accent); font-weight: 700; background: var(--gold-soft); border-radius: 6px; padding: 1px 4px; box-shadow: inset 0 -2px 0 var(--gold); }
+.sentence a { font-weight: 700; text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 6px; }
 
 /* ---------- no results / empty ---------- */
 .empty { padding: 48px 8px 0; text-align: center; }
 .empty .title { margin: 0 0 6px; font-size: 18px; font-weight: 600; }
 .empty p { margin: 0 0 6px; color: var(--muted); font-size: 15px; }
-.empty a { color: var(--accent); font-weight: 600; }
+.empty a { color: var(--ink); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 .empty .try { margin-top: 18px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
-.empty .try a { padding: 8px 14px; border-radius: 18px; background: var(--accent-soft); font-weight: 600; }
+.empty .try a { padding: 7px 14px; border-radius: 18px; border: 1px solid var(--line); font-weight: 500; text-decoration: none; }
 
 /* ---------- top bar on word / saved ---------- */
 .topbar {
@@ -152,7 +150,7 @@ body.page .masthead, body.page .searchbar { display: none; }
 /* ---------- word ---------- */
 .word { padding-top: 18px; }
 .word h1 { margin: 0; font-family: var(--serif); font-weight: 800; font-size: 54px; line-height: 1.2; overflow-wrap: anywhere; }
-.say { display: inline-flex; align-items: center; gap: 8px; margin-top: 2px; padding: 6px 0; font-size: 19px; color: var(--accent); }
+.say { display: inline-flex; align-items: center; gap: 8px; margin-top: 2px; padding: 6px 0; font-size: 19px; color: var(--muted); }
 .say svg { width: 22px; height: 22px; }
 .say:active { opacity: .6; }
 .say.speaking svg { animation: pulse .8s ease-in-out infinite alternate; }
@@ -162,12 +160,12 @@ body.page .masthead, body.page .searchbar { display: none; }
 .word .section { margin-top: 26px; }
 .senses { margin: 0; padding: 0; list-style: none; counter-reset: s; }
 .senses li { counter-increment: s; display: flex; gap: 12px; padding: 3px 0; font-size: 18px; }
-.senses li::before { content: counter(s); flex: none; width: 24px; height: 24px; margin-top: 2px; border-radius: 50%; background: var(--gold); color: var(--on-gold); font-size: 13px; font-weight: 700; display: grid; place-items: center; }
-.example { margin: 0; padding: 14px 16px; border-radius: 0 14px 14px 0; border-left: 3px solid var(--gold); background: var(--field); font-size: 20px; line-height: 1.7; }
-.example b { color: var(--accent); font-weight: 700; }
+.senses li::before { content: counter(s) '.'; flex: none; min-width: 18px; color: var(--faint); font-variant-numeric: tabular-nums; }
+.example { margin: 0; padding: 2px 0 2px 16px; border-left: 2px solid var(--line); font-size: 20px; line-height: 1.7; }
+.example b { font-weight: 700; }
 .example a { text-decoration: underline; text-decoration-color: var(--faint); text-underline-offset: 4px; }
 .spellings { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.spellings li { padding: 5px 12px; border-radius: 8px; background: var(--field); font-size: 15px; }
+.spellings li { padding: 4px 12px; border-radius: 8px; border: 1px solid var(--line); font-size: 15px; color: var(--muted); }
 
 .pager { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 34px; padding-top: 16px; border-top: 1px solid var(--line); }
 .pager a { display: flex; flex-direction: column; padding: 10px 0; }
