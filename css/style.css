@@ -99,12 +99,12 @@ body.page .masthead, body.page .searchbar { display: none; }
 
 .rows { list-style: none; margin: 0; padding: 0; }
 .rows li + li { border-top: 1px solid var(--line); }
-.row { display: block; padding: 11px 0; }
+.row { display: block; padding: 9px 0; }
 .row:active { background: var(--press); }
 .row-top { display: flex; align-items: baseline; gap: 10px; }
-.row .hw { font-family: var(--serif); font-weight: 600; font-size: 20px; line-height: 1.45; }
-.row .tr { font-size: 15px; color: var(--muted); }
-.row .gloss { display: block; font-size: 16px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row .hw { font-family: var(--serif); font-weight: 600; font-size: 17px; line-height: 1.45; }
+.row .tr { font-size: 13px; color: var(--muted); }
+.row .gloss { display: block; font-size: 14px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -20px; padding: 0 20px 2px; list-style: none; }
 .chips::-webkit-scrollbar { display: none; }
@@ -141,13 +141,13 @@ body.page .masthead, body.page .searchbar { display: none; }
 .group {
   position: sticky; top: var(--search-h); z-index: 2;
   display: flex; align-items: center; gap: 10px;
-  margin: 22px 0 4px; padding: 6px 12px; border-radius: 10px;
+  margin: 24px 0 4px; padding: 6px 14px; border-radius: 12px;
   background: var(--sky); box-shadow: 0 0 0 4px var(--bg);   /* hides rows sliding underneath */
   font-family: var(--sans); font-size: 14px; font-weight: 500; color: var(--muted);
   scroll-margin-top: var(--search-h);
 }
 .group:first-child { margin-top: 4px; }
-.group .gl { font-family: var(--serif); font-size: 22px; font-weight: 800; line-height: 1; padding-top: 6px; color: var(--gold-text); min-width: 26px; }
+.group .gl { font-family: var(--serif); font-size: 36px; font-weight: 800; line-height: 1; padding-top: 10px; color: var(--gold-text); min-width: 26px; }
 .group small { margin-left: auto; font-size: 13px; color: var(--faint); }
 
 /* ---------- sentence lookup ---------- */
