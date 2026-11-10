@@ -118,7 +118,9 @@ function renderHome() {
   $('clear-recent')?.addEventListener('click', () => { store.set(RECENT, []); renderHome(); });
 }
 
-// ---------- Browse tab: letter strip + every word ----------
+// ---------- Browse tab: letters in a sidebar, words on the right ----------
+// As you scroll, the letter whose words are on screen lights up in the sidebar.
+let stopSpy = () => {};
 function renderBrowse() {
   const groups = new Map();
   for (const e of sorted) {
@@ -126,19 +128,65 @@ function renderBrowse() {
     if (!groups.has(letter)) groups.set(letter, []);
     groups.get(letter).push(e);
   }
-  view.innerHTML = `
-    <nav class="letters" aria-label="Jump to letter">${[...groups.keys()].map((l) =>
-      `<button type="button" data-letter="${l}" lang="hi">${l}</button>`).join('')}</nav>
-    ${[...groups].map(([l, list]) => `<h2 class="group-head" id="letter-${l}" lang="hi">${l}</h2>${rows(list)}`).join('')}`;
+  view.innerHTML = `<div class="browse">
+    <nav class="side" aria-label="Jump to letter">${[...groups.keys()].map((l) =>
+      `<button type="button" data-letter="${l}" lang="hi" aria-label="Words starting with ${l}">${l}</button>`).join('')}</nav>
+    <div class="words">${[...groups].map(([l, list]) =>
+      `<h2 class="group-head" id="letter-${l}" data-letter="${l}" lang="hi">${l}<span class="count">${list.length}</span></h2>${rows(list)}`).join('')}</div>
+  </div>`;
 
-  const strip = view.querySelector('.letters');
-  strip.addEventListener('click', (ev) => {
+  const side = view.querySelector('.side');
+  const heads = [...view.querySelectorAll('.group-head')];
+  let current = null;
+  let pinned = null;   // a tapped letter stays lit until the user scrolls by hand
+
+  const setActive = (letter) => {
+    if (letter === current) return;
+    current = letter;
+    for (const b of side.children) {
+      const on = b.dataset.letter === letter;
+      if (on) {
+        b.setAttribute('aria-current', 'true');
+        // keep the lit letter inside the sidebar's own scroll area
+        const top = b.offsetTop - side.offsetTop;
+        if (top < side.scrollTop + 8) side.scrollTop = top - 8;
+        else if (top + b.offsetHeight > side.scrollTop + side.clientHeight - 8) side.scrollTop = top + b.offsetHeight - side.clientHeight + 8;
+      } else b.removeAttribute('aria-current');
+    }
+  };
+  const spy = () => {
+    if (pinned) return setActive(pinned);
+    const line = document.querySelector('.search-bar').getBoundingClientRect().bottom + 24;
+    let cur = heads[0];
+    for (const h of heads) { if (h.getBoundingClientRect().top <= line) cur = h; else break; }
+    if (innerHeight + scrollY >= document.documentElement.scrollHeight - 4) cur = heads.at(-1);
+    setActive(cur.dataset.letter);
+  };
+  let raf = 0;
+  const onScroll = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(spy); };
+  const unpin = () => { pinned = null; };
+  addEventListener('scroll', onScroll, { passive: true });
+  addEventListener('wheel', unpin, { passive: true });
+  addEventListener('touchmove', unpin, { passive: true });
+  addEventListener('keydown', unpin);
+  stopSpy = () => {
+    removeEventListener('scroll', onScroll);
+    removeEventListener('wheel', unpin);
+    removeEventListener('touchmove', unpin);
+    removeEventListener('keydown', unpin);
+  };
+
+  side.addEventListener('click', (ev) => {
     const b = ev.target.closest('button');
     if (!b) return;
-    for (const x of strip.children) x.removeAttribute('aria-current');
-    b.setAttribute('aria-current', 'true');
-    $(`letter-${b.dataset.letter}`)?.scrollIntoView({ behavior: 'smooth' });
+    pinned = b.dataset.letter;
+    setActive(pinned);
+    $(`letter-${pinned}`)?.scrollIntoView({ behavior: 'smooth' });
   });
+  // the sidebar scrolling itself shouldn't count as a hand scroll of the list
+  side.addEventListener('touchmove', (ev) => ev.stopPropagation(), { passive: true });
+  side.addEventListener('wheel', (ev) => ev.stopPropagation(), { passive: true });
+  spy();
 }
 
 // ---------- Saved tab ----------
@@ -294,6 +342,8 @@ function route() {
   const [, kind, ...rest] = hash.split('/');
   const arg = rest.join('/');
   document.title = 'शब्दकोश, Garuda Prakashan';
+  stopSpy();
+  stopSpy = () => {};
 
   if (kind === 'word') {
     setTab('word');
@@ -322,6 +372,8 @@ input.addEventListener('input', () => {
   setTab('search');
   backTo = { hash, label: v.trim() ? 'Results' : 'Search' };
   setSearching();
+  stopSpy();
+  stopSpy = () => {};
   renderSearch(v);
   window.scrollTo(0, 0);
 });
