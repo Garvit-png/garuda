@@ -17,6 +17,7 @@
 2. Picked the **Dictionary App** track when Claude asked which track(s) to do.
 3. Pasted the Track 3 brief (requirements, starter data and deliverables) when Claude pointed out that the brief itself was missing from the first paste.
 4. After seeing the first version: *"ux vgera sb sahi kro, bahot AI lg raha hai, fix it, ekdm minimal bnao, professional bhi lge, easy to use, thoda phone optimise"* ("fix the UX, it looks too AI-made; make it really minimal, professional, easy to use, and optimise it a bit for phones"). This led to rows 10–12 below.
+5. After the second version: *"color bahot bekar sa lg raha hai, can we do it like white and green… title vgera sb ai lg raha hai, create something unique design… kuch extra cherry on the top"* ("the colour looks bad, can we do white and green; the titles still look AI-made, make a unique design; and add something extra on top"). This led to rows 13–15.
 
 Claude Code then worked in small steps and committed after each one. The commit messages record what changed and why. *(Claude Code sessions can be exported with `/export` if you want to attach the full transcript.)*
 
@@ -36,6 +37,9 @@ Claude Code then worked in small steps and committed after each one. The commit 
 | 10 | First UI: gradient "word of the day" card, pill chips, uppercase labels, shadows, a red "why it matched" note on every result | **My feedback: it looked too AI-generated, and I wanted it minimal, professional, easy to use and better on a phone** | Redesigned: system fonts, plain lists with dividers, one accent colour, icon buttons. Home is now just Recent, Saved and All words. One status line replaces the per-result notes. Phone fixes: Enter opens the top result, scrolling hides the keyboard, 44px targets. |
 | 11 | "Did you mean" for `bharat` offered धर्म, भाषा, पर्वत | Unrelated suggestions make the app look careless | Suggestions must now be within 1 extra edit and start with the same sound |
 | 12 | The service worker serves files cache-first | After the redesign, phones would have kept showing the old cached UI | Bumped the cache version so the new design reaches installed users |
+| 13 | Second design used a red accent and an English-only title | **My feedback: the colour felt off and the titles still looked AI-made. I asked for white and green, a design of its own, and an extra feature others wouldn't build.** | White and deep green. Gave the app an identity based on the shirorekha (the wordmark's headline extends into a rule), bilingual labels, and a वर्णमाला letter index. Added sentence lookup and share-as-image. |
+| 14 | Sentence lookup first used the normal search, prefix and fuzzy included | That would underline random Hinglish words ("kal" → कला, "mat" → माता) | Only exact or 4+ letter same-sound matches count. Tested against about 90 everyday Hinglish words: no false highlights. Documented the one remaining ambiguity (`kala`). |
+| 15 | A comment in `card.js` described a rule above the headword that the code never draws | The comment didn't match the code | Fixed the comment |
 
 ## How facts, sources and code were checked
 
@@ -46,6 +50,6 @@ Claude Code then worked in small steps and committed after each one. The commit 
 - ✍️ **Your spot-check:** pick 10–15 entries and confirm the meanings against a standard dictionary (e.g. McGregor's *Oxford Hindi–English Dictionary* or shabdkosh.com). Note any changes here: *"Checked N entries against ___; changed ___."*
 
 **Code:**
-- 15 automated tests built on real examples: the brief's धर्म/dharma/dharm case, every listed spelling of all 60 entries, spellings not in the list, IAST with diacritics, half-nasal/visarga/ZWJ/NFD variants, typos, English reverse lookup and no-results.
+- 18 automated tests built on real examples: the brief's धर्म/dharma/dharm case, every listed spelling of all 60 entries, spellings not in the list, IAST with diacritics, half-nasal/visarga/ZWJ/NFD variants, typos, English reverse lookup, no-results, and sentence lookup (including no false highlights on Hinglish).
 - Probed the search with ambiguous queries (`sa`, `kal`, `ram`, `bharat`, `krishna`…) and read the ranked output. Fixes 1–3 above came from this, not from the tests.
 - UI checked with real screenshots at 390px. **Offline mode verified**: loaded the app, cut the network in Chrome, reloaded, and searched `vruksh` → वृक्ष still worked.

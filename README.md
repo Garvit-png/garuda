@@ -13,9 +13,11 @@ A Hindi–English dictionary for **Garuda Prakashan** (Track 3: Dictionary App),
 | **Bonus:** typo-tolerant | ✅ `prakesh` → प्रकाश, `vishvash` → विश्वास, `sanskirti` → संस्कृति |
 | **Bonus:** works offline | ✅ service worker; verified by cutting the network in Chrome and reloading |
 | **Bonus:** recent searches / bookmarks | ✅ recent and saved words on the home screen |
-| Extra | English reverse lookup (`peace` → शांति), Hindi text-to-speech, share links |
+| ⭐ **Sentence lookup** | Paste any Hindi or Hinglish sentence (`Gyaan aur vidya sabse bada dhan hai`) and every dictionary word in it becomes tappable |
+| ⭐ **Share as image** | One tap makes a 1080×1350 branded word card for WhatsApp or Instagram |
+| Extra | English reverse lookup (`peace` → शांति), Hindi text-to-speech, A–Z letter index (वर्णमाला) |
 
-**Design:** minimal and native-feeling, like a printed dictionary. It uses the phone's own fonts (no web fonts to download), plain lists with thin dividers, and one accent colour. Phone details: a 17px search field (iOS doesn't zoom in), 44px+ tap targets, the keyboard's Search key opens the top result, scrolling the results hides the keyboard, safe-area insets for notched phones, and dark mode.
+**Design:** white and deep green, minimal, built around the **shirorekha** (शिरोरेखा), the headline that joins the letters of every Devanagari word. The wordmark शब्दकोश carries its headline on as the brand rule, and the same mark appears on the share card and the app icon. Section labels are bilingual (अर्थ Meaning, उदाहरण Example), and the word list is grouped by letter like a printed dictionary. It uses the phone's own fonts, so there are no web fonts to download. Phone details: a 17px search field (iOS doesn't zoom in), 44px+ tap targets, the keyboard's Search key opens the top result, scrolling the results hides the keyboard, safe-area insets for notched phones, and dark mode.
 
 ## How to run
 
@@ -28,7 +30,7 @@ python3 -m http.server 8080        # or: npx serve .
 ```
 
 ```bash
-npm test           # 15 search tests built on real Hindi examples (Node 18+)
+npm test           # 18 tests: search + sentence lookup built on real Hindi examples (Node 18+)
 npm run validate   # checks all 60 entries for data errors (see "Checking the data")
 ```
 
@@ -40,7 +42,8 @@ To deploy, push to GitHub and enable Pages from the `main` branch root. All path
 data/entries.json   60 entries in the brief's exact schema (10 given + 50 added)
 js/indic.js         Devanagari normalisation, Devanagari→Roman/IAST, phonetic key, weighted edit distance
 js/search.js        index + ranked search (pure functions, no DOM: reusable anywhere)
-js/app.js           UI, hash routing, bookmarks/recents, offline status
+js/app.js           UI, hash routing, bookmarks/recents, sentence view, offline status
+js/card.js          share-as-image word card (canvas, 1080×1350)
 sw.js               offline cache
 scripts/validate-data.js   dataset checks
 tests/search.test.js       search tests
@@ -92,6 +95,12 @@ The brief says wrong meanings or spellings count against us, and AI wrote the fi
 - Schema and part of speech match the starter-data style.
 
 The validator was **mutation-tested**: I injected 6 kinds of error into a copy of the data, and it caught all 6. Meanings, genders and example sentences were also reviewed by hand (see `AI_LOG.md`).
+
+## The extras: why these two
+
+**Sentence lookup.** Real users meet Hindi words inside sentences: a WhatsApp forward, a news article, a book. Paste the sentence and every word the dictionary knows is underlined; tap one to open it. `findWords()` in `js/search.js` is the whole feature as one pure function, so the same code can power a browser extension, an e-book reader, or an AI tool. Matching is deliberately strict, because a wrong highlight is worse than a missing one: only exact spellings count, or same-sound matches of 4+ letters. Hinglish `kal` (tomorrow) does not light up कला, and `mat` (don't) does not light up माता. I tested this against about 90 everyday Hinglish words, and only real dictionary words matched. Known limitation: `kala` is a listed spelling of कला (art) but often means काला (black). That will resolve itself once काला is in the dictionary and results can be ranked by context.
+
+**Share as image.** Garuda is a publisher, and a word card shared on WhatsApp or Instagram is free, branded reach. Most dictionary apps only share a link. The card is drawn on a canvas in the app's own style and shared through the phone's share sheet. Where image sharing isn't supported, it falls back to sharing the link or downloading the image.
 
 ## Trade-offs
 

@@ -1,6 +1,6 @@
 # Garvit Gandhi: Dictionary App (Track 3)
 
-I built a mobile-first, offline-capable dictionary web app on 60 entries: the 10 provided plus 50 that I added and validated. Search works in Devanagari and Roman: `धर्म`, `dharma`, `dharm` and `dharam` all open the same entry. Spellings not in the variant list are matched through a phonetic key, typos are tolerated, and English meanings are searchable too. It includes saved and recent words, Hindi text-to-speech and share links, in a minimal design built for phones.
+I built a mobile-first, offline-capable dictionary web app on 60 entries: the 10 provided plus 50 that I added and validated. Search works in Devanagari and Roman: `धर्म`, `dharma`, `dharm` and `dharam` all open the same entry. Spellings not in the variant list are matched through a phonetic key, typos are tolerated, and English meanings are searchable too. Two extras: **paste any Hindi or Hinglish sentence** and every dictionary word in it becomes tappable, and **share any word as a branded image card** for WhatsApp or Instagram. The design is white and green, built around the Devanagari shirorekha.
 
 - **Live app:** https://garvit-png.github.io/garuda/
 - **GitHub (public):** https://github.com/Garvit-png/garuda (its README covers how to run it, how it works, trade-offs and next steps)
