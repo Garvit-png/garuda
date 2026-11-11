@@ -2,7 +2,9 @@
 
 A Hindi–English dictionary PWA for Garuda Prakashan with 60 entries. You can type a word in Devanagari (`धर्म`) or any Roman spelling (`dharma`, `dharm`, `dharam`, `dharmā`) and reach the same entry. Works offline. Installable on a phone.
 
-**Live:** https://garvit-png.github.io/garuda/ · **Demo video:** _(Loom link)_
+**Live:** https://garuda-delta-six.vercel.app/ · **Demo video:** _(Loom link)_
+
+**GitHub:** https://github.com/Garvit-png/garuda · **Google Drive:** https://drive.google.com/drive/folders/1nJgejRjyA7voUPk52PNIT87Tx4wVwWxM?usp=sharing
 
 ## Features
 

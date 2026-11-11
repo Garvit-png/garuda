@@ -14,8 +14,9 @@ I built a mobile-first, offline-capable Hindi–English dictionary PWA on 60 ent
 
 ---
 
-**Live app:** https://garvit-png.github.io/garuda/
+**Live app:** https://garuda-delta-six.vercel.app/
 **GitHub (public):** https://github.com/Garvit-png/garuda
+**Google Drive folder:** https://drive.google.com/drive/folders/1nJgejRjyA7voUPk52PNIT87Tx4wVwWxM?usp=sharing
 **Demo video:** _(Loom link — record and paste before submitting)_
 
 ---
@@ -33,6 +34,7 @@ I built a mobile-first, offline-capable Hindi–English dictionary PWA on 60 ent
 
 - [ ] Record the demo video (see `DEMO_SCRIPT.md` in the repo) and paste the Loom link above
 - [ ] Confirm the GitHub repo is public: https://github.com/Garvit-png/garuda → Settings → Public
-- [ ] Confirm the live site loads: https://garvit-png.github.io/garuda/
-- [ ] Set this Drive folder sharing to **"Anyone with the link can view"**
+- [ ] Confirm the live site loads: https://garuda-delta-six.vercel.app/
+- [x] Google Drive folder link: https://drive.google.com/drive/folders/1nJgejRjyA7voUPk52PNIT87Tx4wVwWxM?usp=sharing
+- [x] Set Drive folder sharing to **"Anyone with the link can view"**
 - [ ] Do not change any files after the deadline (version history is visible to reviewers)
