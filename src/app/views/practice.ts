@@ -25,7 +25,7 @@ export function renderPractice(): void {
   const finish = () => {
     const message = score === ROUNDS ? 'All correct. Well done!' : score >= 3 ? 'Good going. Try another round.' : 'Keep practising, it gets easier.';
     view().innerHTML = `${topbar('Practice', '', '#/')}<div class="wrap score">
-      <p class="big">${score} / ${ROUNDS}</p><p>${message}</p>
+      <p class="big">${score}<span> / ${ROUNDS}</span></p><p>${message}</p>
       <div class="actions"><button class="btn" id="again">Play again</button><a class="btn ghost" href="#/">Home</a></div></div>`;
     $('again').addEventListener('click', renderPractice);
   };

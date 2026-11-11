@@ -44,25 +44,28 @@ export function renderWord(id: number): void {
     ${topbar('', `<button class="icon-btn" id="save" aria-pressed="${isSaved}" aria-label="${isSaved ? 'Remove from saved' : 'Save word'}">${icon.bookmark}</button>
       <button class="icon-btn" id="share" aria-label="Share">${icon.share}</button>`)}
     <article class="wrap word">
-      <h1 lang="hi">${esc(e.headword)}</h1>
-      ${canSpeak
-        ? `<button class="say" id="say" aria-label="Hear it said">${esc(e.romanised[0])} ${icon.speaker}</button>`
-        : `<p class="say">${esc(e.romanised[0])}</p>`}
-      <p class="pos">${esc(posText(e.pos))} <span class="iast">(IAST: ${esc(e.transliteration)})</span></p>
+      <div class="word-hero">
+        <h1 lang="hi">${esc(e.headword)}</h1>
+        ${canSpeak
+          ? `<button class="say" id="say" aria-label="Hear it said">${esc(e.romanised[0])} ${icon.speaker}</button>`
+          : `<p class="say">${esc(e.romanised[0])}</p>`}
+        <p class="word-pos">${esc(posText(e.pos))}<span class="iast"> · ${esc(e.transliteration)}</span></p>
+      </div>
+      <div class="word-body">
+        ${section('Meaning')}
+        <ol class="senses">${e.meanings.map((m) => `<li>${esc(m)}</li>`).join('')}</ol>
 
-      ${section('Meaning')}
-      <ol class="senses">${e.meanings.map((m) => `<li>${esc(m)}</li>`).join('')}</ol>
+        ${section('Example')}
+        <p class="example" lang="hi">${exampleHtml(e)}</p>
 
-      ${section('Example sentence')}
-      <p class="example" lang="hi">${exampleHtml(e)}</p>
+        ${section('Other spellings')}
+        <ul class="spellings">${e.romanised.map((r) => `<li>${esc(r)}</li>`).join('')}</ul>
 
-      ${section('Other spellings')}
-      <ul class="spellings">${e.romanised.map((r) => `<li>${esc(r)}</li>`).join('')}</ul>
-
-      <nav class="pager" aria-label="Neighbouring words">
-        ${prev ? `<a class="prev" href="#/word/${prev.id}"><small>Previous</small><span lang="hi">${esc(prev.headword)}</span></a>` : '<span></span>'}
-        ${next ? `<a class="next" href="#/word/${next.id}"><small>Next</small><span lang="hi">${esc(next.headword)}</span></a>` : ''}
-      </nav>
+        <nav class="pager" aria-label="Neighbouring words">
+          ${prev ? `<a class="prev" href="#/word/${prev.id}"><small>Previous</small><span lang="hi">${esc(prev.headword)}</span></a>` : '<span></span>'}
+          ${next ? `<a class="next" href="#/word/${next.id}"><small>Next</small><span lang="hi">${esc(next.headword)}</span></a>` : ''}
+        </nav>
+      </div>
     </article>`;
 
   if (canSpeak) $('say').addEventListener('click', (ev) => speak(e.headword, ev.currentTarget as HTMLElement));

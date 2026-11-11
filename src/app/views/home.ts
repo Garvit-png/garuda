@@ -1,6 +1,6 @@
 import type { Entry } from '../../lib/types.ts';
 import { VARGAS, firstLetter } from '../alphabet.ts';
-import { $, esc, plural, rows, section, view, wing } from '../dom.ts';
+import { $, esc, plural, rows, section, view } from '../dom.ts';
 import { app, entriesFor } from '../state.ts';
 import { recent } from '../store.ts';
 
@@ -15,8 +15,11 @@ function todayCard(): string {
   const e = wordOfTheDay();
   const date = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long' });
   return `<a class="today" href="#/word/${e.id}">
-    ${wing('wing-bg')}
-    <p class="kicker"><span lang="hi">आज का शब्द</span><span class="date">${date}</span></p>
+    <div class="kicker">
+      <span class="dot"></span>
+      <span class="kicker-label">Word of the day</span>
+      <span class="date">${date}</span>
+    </div>
     <span class="hw" lang="hi">${esc(e.headword)}</span>
     <p class="tr">${esc(e.romanised[0])}</p>
     <p class="mean">${esc(e.meanings.join(', '))}</p>
@@ -71,7 +74,6 @@ function scrollSpy(): () => void {
   const side = view().querySelector<HTMLElement>('.letters');
   const sections = [...view().querySelectorAll<HTMLElement>('.letter')];
   if (!side || !sections.length) return () => {};
-  const searchbar = $('searchbar');
   let current: string | null = null;
   let pinned: string | null = null; // a tapped letter stays lit until the user scrolls by hand
 
@@ -89,7 +91,8 @@ function scrollSpy(): () => void {
   };
   const spy = () => {
     if (pinned) return light(pinned);
-    const line = searchbar.getBoundingClientRect().bottom + 30;
+    const masthead = document.getElementById('masthead');
+    const line = (masthead ?? $('searchbar')).getBoundingClientRect().bottom + 4;
     let cur = sections[0];
     for (const s of sections) { if (s.getBoundingClientRect().top <= line) cur = s; else break; }
     light(cur.dataset.l ?? '');

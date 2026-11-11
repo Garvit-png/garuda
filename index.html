@@ -6,7 +6,7 @@
   <title>शब्दकोश, Garuda Prakashan</title>
   <meta name="description" content="Hindi–English dictionary by Garuda Prakashan. Search in Devanagari, Roman spelling or English. Works offline.">
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#0f1222" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="शब्दकोश">
@@ -16,39 +16,57 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+Devanagari:wght@600;800&display=swap">
+  <!-- Prevent white/dark flash: set theme class before first paint -->
+  <script>
+    (function() {
+      try {
+        var dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.classList.toggle('dark', dark);
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
-  <header class="masthead">
-    <div class="wrap brand-row">
+  <!-- Loading overlay shown until JS boots -->
+  <div id="loading" class="loading" aria-hidden="true">
+    <div class="loading-spinner" aria-label="Loading dictionary"></div>
+    <span class="loading-text" lang="hi">शब्दकोश</span>
+  </div>
+
+  <header class="masthead" id="masthead" hidden>
+    <div class="brand-row">
       <a class="brand" href="#/" aria-label="Shabdkosh home">
         <svg class="wing" viewBox="0 0 64 36" aria-hidden="true"><path d="M4 30C14 18 30 8 60 4"/><path d="M10 30.5C22 24 38 16 58 11"/><path d="M16 31.2C28 27 42 22 55 18"/><path d="M22 32C33 30 44 27 52 25"/><path d="M4 30 22 32"/></svg>
-        <span class="brand-hi" lang="hi">शब्दकोश</span>
+        <span class="brand-text">
+          <span class="brand-hi" lang="hi">शब्दकोश</span>
+          <span class="brand-en">Garuda Prakashan</span>
+        </span>
       </a>
       <button type="button" class="size-btn" id="size" aria-pressed="false" aria-label="Bigger text">Aa</button>
     </div>
-  </header>
 
-  <div class="searchbar" id="searchbar">
-    <form class="wrap search" role="search" id="search-form">
-      <label for="q" class="sr-only">Search the dictionary</label>
-      <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
-      <input id="q" type="search" placeholder="Search: धर्म, dharm or peace"
-             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-             enterkeyhint="search" aria-controls="view">
-      <button type="button" id="mic" class="mic" aria-label="Search by voice" hidden>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5"/></svg>
-      </button>
-      <button type="button" id="clear" class="clear" aria-label="Clear search" hidden>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg>
-      </button>
-    </form>
-  </div>
+    <div class="searchbar" id="searchbar">
+      <form class="search search-wrap" role="search" id="search-form">
+        <label for="q" class="sr-only">Search the dictionary</label>
+        <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
+        <input id="q" type="search" placeholder="Search: धर्म, dharm or peace"
+               autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+               enterkeyhint="search" aria-controls="view">
+        <button type="button" id="mic" class="mic" aria-label="Search by voice" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5"/></svg>
+        </button>
+        <button type="button" id="clear" class="clear" aria-label="Clear search" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg>
+        </button>
+      </form>
+    </div>
+  </header>
 
   <p id="offline" class="offline" hidden>You're offline. Search still works.</p>
 
-  <main id="view" tabindex="-1"></main>
+  <main id="view" tabindex="-1" hidden></main>
 
-  <nav class="tabbar" aria-label="Sections">
+  <nav class="tabbar" aria-label="Sections" hidden>
     <a href="#/" data-tab="home">
       <svg viewBox="0 0 64 36" aria-hidden="true"><path d="M4 30C14 18 30 8 60 4"/><path d="M10 30.5C22 24 38 16 58 11"/><path d="M16 31.2C28 27 42 22 55 18"/><path d="M22 32C33 30 44 27 52 25"/><path d="M4 30 22 32"/></svg>
       <span>Dictionary</span></a>

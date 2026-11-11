@@ -19,6 +19,10 @@ const micBtn = $('mic');
 const searchbar = $('searchbar');
 const savedCount = $('saved-count');
 const sizeBtn = $('size');
+const loading = $('loading');
+const masthead = $('masthead');
+const mainView = $('view');
+const tabbar = document.querySelector<HTMLElement>('.tabbar');
 
 let cleanup: () => void = () => {};
 
@@ -106,6 +110,11 @@ sizeBtn.addEventListener('click', () => {
 const updateNet = () => { $('offline').hidden = navigator.onLine; };
 addEventListener('online', updateNet);
 addEventListener('offline', updateNet);
+
+// ---------- system theme change (update .dark class on <html>) ----------
+const mq = window.matchMedia('(prefers-color-scheme: dark)');
+mq.addEventListener?.('change', (e) => document.documentElement.classList.toggle('dark', e.matches));
+
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => { /* offline support is a bonus */ });
 }
@@ -117,9 +126,17 @@ async function boot(): Promise<void> {
     if (!res.ok) throw new Error(String(res.status));
     loadEntries((await res.json()) as Entry[]);
   } catch {
+    loading.hidden = true;
     view().innerHTML = `<div class="wrap">${empty('Couldn’t load the dictionary', '<p>Check your connection and reload.</p>')}</div>`;
+    masthead.hidden = false;
+    mainView.hidden = false;
+    if (tabbar) tabbar.hidden = false;
     return;
   }
+  loading.hidden = true;
+  masthead.hidden = false;
+  mainView.hidden = false;
+  if (tabbar) tabbar.hidden = false;
   saved.onChange(updateSavedCount);
   updateSavedCount();
   updateNet();
