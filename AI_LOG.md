@@ -70,3 +70,35 @@ Claude Code then worked in small steps and committed after each one. The commit 
 - 18 automated tests built on real examples: the brief's धर्म/dharma/dharm case, every listed spelling of all 60 entries, spellings not in the list, IAST with diacritics, half-nasal/visarga/ZWJ/NFD variants, typos, English reverse lookup, no-results, and sentence lookup (including no false highlights on Hinglish).
 - Probed the search with ambiguous queries (`sa`, `kal`, `ram`, `bharat`, `krishna`…) and read the ranked output. Fixes 1–3 above came from this, not from the tests.
 - UI checked with real screenshots at 390px. **Offline mode verified**: loaded the app, cut the network in Chrome, reloaded, and searched `vruksh` → वृक्ष still worked.
+
+---
+
+## Session 2 — UI redesign (Kiro IDE, November 2026)
+
+### Tool used
+**Kiro IDE** (Claude via acp-client) — conversational UI/UX iteration session. No new code logic was written; all changes were visual (CSS, HTML structure, view templates).
+
+### What was done
+Starting from the TypeScript + Vite app built in Session 1, the entire visual design was reworked twice based on feedback:
+
+**Attempt 1 — "The Living Manuscript"**
+Deep warm-black header (`#1c1410`), parchment background (`#fdf8f1`), saffron (`#c8622b`) + teal (`#0d6b6b`) two-color system. Dark masthead band, decorative Devanagari watermarks, floating cards with shadows.
+
+**Feedback:** *"UI bahot bekar hai, bahot AI lag raha hai, ek dum minimal krde"* (the UI looks bad, too AI-generated, make it completely minimal).
+
+**Attempt 2 — Minimal (current design)**
+Scrapped all decoration. White page, one accent color (`#E05A1E`, saffron-orange). Rules: the accent appears only on the Garuda wing, links, active states, roman text in list rows. No shadows, no background fills, no second color. Hairlines only. Type size and weight create all hierarchy.
+
+### What was rejected or corrected in Session 2
+
+| # | What the AI produced | Problem | What was done |
+|---|---|---|---|
+| 33 | "Living Manuscript" design — dark header, parchment background, two accent colors, shadows | Feedback: too heavy, too AI-generated, not minimal enough | Scrapped entirely; rebuilt from scratch as single-accent white design |
+| 34 | Masthead and searchbar as two separate elements, each sticky | Gap appeared between them when scrolling — the masthead would scroll away leaving a white gap above the sticky searchbar | Merged into one `<header>` with `position: sticky; top: 0` so they stick as one unit |
+| 35 | Sticky letter heading `.group` and sidebar `.letters` used `top: calc(var(--bar-h) + 16px)` | The extra 16px created a visible gap between the search bar and the sticky heading | Removed the extra offset; both now use `top: var(--bar-h)` exactly |
+| 36 | Row padding `12px` | User asked for more gap between words in the list | Iterated: 16px (too much), 13px (too little), settled on 15px |
+| 37 | Row gap between Hindi headword and Roman transliteration was 10px | User asked for more horizontal space between ज्ञान and gyan | Increased `gap` to 14px |
+| 38 | `--bar-h: 112px` hardcoded | Doesn't account for `env(safe-area-inset-top)` — sticky offsets wrong on notched iPhones | Changed to `calc(112px + env(safe-area-inset-top))` |
+| 39 | Scroll-spy used `#searchbar.getBoundingClientRect().bottom` | `#searchbar` is now inside `.masthead`; using its bottom gave wrong detection line | Changed to read `.masthead` bottom edge |
+| 40 | Dark mode used `html:not(.dark)` inside `@media (prefers-color-scheme: dark)` | Once the `.dark` class is set, the query never fires when user switches back to light | Changed to `@media (prefers-color-scheme: dark) { :root { ... } }` — class block overrides via source order |
+| 41 | Pager used `background: var(--line)` + `gap: 1px` trick | Disappears or doubles on retina displays | Changed to `border-right: 1px solid var(--line)` on the left cell |
