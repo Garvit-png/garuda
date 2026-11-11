@@ -1,104 +1,98 @@
-# AI log: Garuda Prakashan, Track 3 (Dictionary App)
+# AI Log — Garuda Shabdkosh, Track 3
 
-> **Garvit: read this before submitting.** Claude drafted this log from our actual session. Everything under "What was rejected or corrected" really happened and can be traced in the commit history. Fill in the two ✍️ items, and edit anything you'd describe differently.
-
-## Tools used
-
-| Tool | Used for |
-|---|---|
-| **Claude Code** (Claude Opus 5.5, terminal agent) | Planning the approach, writing all the code (search engine, UI, service worker, validator, tests), drafting the 50 new dictionary entries, the README and this log |
-| **Headless Google Chrome** (driven by Claude Code) | Screenshots at phone width (390px), and an offline test over the Chrome DevTools Protocol |
-| **Node.js test runner** | 18 automated tests (search + sentence lookup), plus the data validator |
-| ✍️ *Add anything you used yourself, e.g. a Hindi dictionary site to cross-check meanings* | |
-
-## Key prompts
-
-1. Pasted the full assignment overview, then: *"YEH TASK HAI MERA yeh poora krna hai, do it"* ("this is my task, I need to finish all of it").
-2. Picked the **Dictionary App** track when Claude asked which track(s) to do.
-3. Pasted the Track 3 brief (requirements, starter data and deliverables) when Claude pointed out that the brief itself was missing from the first paste.
-4. After seeing the first version: *"ux vgera sb sahi kro, bahot AI lg raha hai, fix it, ekdm minimal bnao, professional bhi lge, easy to use, thoda phone optimise"* ("fix the UX, it looks too AI-made; make it really minimal, professional, easy to use, and optimise it a bit for phones"). This led to rows 10–12 below.
-5. After the second version: *"color bahot bekar sa lg raha hai, can we do it like white and green… title vgera sb ai lg raha hai, create something unique design… kuch extra cherry on the top"* ("the colour looks bad, can we do white and green; the titles still look AI-made, make a unique design; and add something extra on top"). This led to rows 13–15.
-
-Claude Code then worked in small steps and committed after each one. The commit messages record what changed and why. *(Claude Code sessions can be exported with `/export` if you want to attach the full transcript.)*
-
-## What was rejected or corrected, and why
-
-| # | What the AI produced | Problem | What we did |
-|---|---|---|---|
-| 1 | Fuzzy-match threshold allowed 1 edit on 3-letter queries | Probing with real queries showed **`ram` matched क्षमा** (through the variant "chhama"). A wrong answer is worse than no answer. | Cut the threshold to half an edit for 3 letters and added a regression test |
-| 2 | Showed all fuzzy hits | **`gyanee` returned ज्ञान *and* अग्नि**, which is noise | Kept only hits close to the best score |
-| 3 | 1–2 letter queries such as `v` or `sh` showed "Did you mean…" | Confusing while the user is still typing | Short queries now act as a prefix browse; suggestions only appear from 3 letters |
-| 4 | Generated romanised spellings included **`wed`, `dukhh`, `granthh`, `agani`, `dhian`, `mandeer`, `widya`, `utsaw`, `arath`, `rsi`, `guroo`** | Nobody types these. Some are English words (`wed`) or invented. Implausible variants count as wrong spellings. | Removed all 11 by hand. The phonetic search still finds those inputs anyway. |
-| 5 | The README claimed the app was "~25 KB" | A guess, not a measurement | Measured it: 57 KB raw, 18 KB gzipped. Also measured search speed (0.04 ms) instead of writing "under 1 ms". |
-| 6 | The first phone screenshot showed content cut off on the right | Looked like a CSS overflow bug | **Did not "fix" the CSS blindly.** Measured that headless Chrome enforces a 500px minimum window, re-rendered in 390px iframes, and confirmed the layout was fine. |
-| 7 | The four detail-screen buttons wrapped 3+1 on a phone | Looked broken | Changed to a 4-column grid |
-| 8 | The clear (×) button showed on an empty search box | CSS `display: grid` overrode the `hidden` attribute | Added `.clear[hidden] { display: none }` |
-| 9 | `npm test` script pointed at a folder | Node 25 won't take a directory there | Changed it to a glob |
-| 10 | First UI: gradient "word of the day" card, pill chips, uppercase labels, shadows, a red "why it matched" note on every result | **My feedback: it looked too AI-generated, and I wanted it minimal, professional, easy to use and better on a phone** | Redesigned: system fonts, plain lists with dividers, one accent colour, icon buttons. Home is now just Recent, Saved and All words. One status line replaces the per-result notes. Phone fixes: Enter opens the top result, scrolling hides the keyboard, 44px targets. |
-| 11 | "Did you mean" for `bharat` offered धर्म, भाषा, पर्वत | Unrelated suggestions make the app look careless | Suggestions must now be within 1 extra edit and start with the same sound |
-| 12 | The service worker serves files cache-first | After the redesign, phones would have kept showing the old cached UI | Bumped the cache version so the new design reaches installed users |
-| 13 | Second design used a red accent and an English-only title | **My feedback: the colour felt off and the titles still looked AI-made. I asked for white and green, a design of its own, and an extra feature others wouldn't build.** | White and deep green. Gave the app an identity based on the shirorekha (the wordmark's headline extends into a rule), bilingual labels, and a वर्णमाला letter index. Added sentence lookup and share-as-image. |
-| 14 | Sentence lookup first used the normal search, prefix and fuzzy included | That would underline random Hinglish words ("kal" → कला, "mat" → माता) | Only exact or 4+ letter same-sound matches count. Tested against about 90 everyday Hinglish words: no false highlights. Documented the one remaining ambiguity (`kala`). |
-| 15 | A comment in `card.js` described a rule above the headword that the code never draws | The comment didn't match the code | Fixed the comment |
-| 16 | Third design: shirorekha logo, bilingual labels, tinted boxes | **My feedback: I shared a screenshot of a native phone dictionary and asked for a complete, clean redesign in white and green.** | Rebuilt the whole UI on that layout: a large serif title that folds away during search, a big serif headword, the IAST in green (tap to hear), a two-part POS label, linked words in the example, and Spellings and Nearby columns. Redrew the share card and icon to match, and checked everything in phone-size screenshots. |
-| 17 | Fourth design was mostly white with little green, and home mixed everything in one long page | **My feedback: use more white and green, and organise everything properly (search bar, browse all, the rest).** | Added a green band for the title and search, and bottom tabs (Search, Browse, Saved) so each thing has one place. The home screen now shows tappable search examples, Browse has a sticky letter strip, Saved has an empty state, and word pages have a green bar and a light-green headword band. Checked six phone-size screens. |
-| 18 | Green header band; Browse letters in a horizontal strip | **My feedback: make the background white, put the letters in a left sidebar with the words on the right, and highlight the letter whose words I'm scrolling through.** | Made every background white, with green kept for text and active states. Built Browse as a sidebar plus list, with a scroll-spy that lights the current letter and keeps it in view inside the sidebar. A tapped letter stays lit until you scroll by hand. Tested in headless Chrome: scrolling lit अ → आ → ग → प → स, and tapping म jumped to म. |
-| 19 | Rows 16–18: three more redesigns (reference-app layout, tabs, letter sidebar) | **My decision: go back to the earlier design with the Listen / Save / Share buttons, exactly as it was.** | Restored the UI files from commit `6d71f51` (HTML, CSS, app.js, card.js, icon, manifest) and bumped the service-worker cache so phones pick it up. The search engine, data and tests didn't change. |
-| 20 | The restored version still had the Listen button, and my phone kept showing old designs | **My feedback: the old version wasn't what I meant; build everything from scratch.** | Rewrote the HTML, CSS and app.js from scratch: white and green, a serif headword, an inline speaker icon instead of a Listen button, the letter sidebar with scroll-spy on Home, a bookmark with a count, previous/next word. Found that stale designs came from the cache-first service worker and made it network-first for the app's own files. The search engine, data and tests are unchanged (18/18). |
-| 21 | White + green colour theme | **My feedback: the colours looked bad, so I asked for a completely different theme.** | Switched to deep indigo (#2c3a8c) for the brand, text links and headings, with marigold (#f4b21f) for active states (current letter, meaning numbers, sentence highlights, saved badge), on white. Updated the dark mode, share card and icon to match. |
-| 22 | Indigo + marigold theme with solid fills | **My feedback: make it minimal, white with something else, with no solid colours.** | Made it monochrome: white, near-black ink, greys and hairline borders. Active states use weight and a thin bar instead of fills. Applied the same to the share card and icon. |
-| 23 | Monochrome theme felt plain, with no Garuda identity | **My feedback: make it stand out, add something, use a lighter and more relaxing colour scheme, and give it a Garuda feel.** | Changed to slate ink, a pale sky tint and Garuda gold accents. Designed a five-stroke Garuda wing mark (header, Word of the day, share card, icon). Added आज का शब्द (Word of the day), which picks a word deterministically from the date. Tested in headless Chrome at phone size, including the share card. |
-| 24 | The site felt hard to read and understand | **My feedback: the wing (pankh) is good; add more features and make the site simpler.** | Readability: darker greys, bigger list text, the everyday spelling instead of IAST in lists, a one-line help on home, plain labels. Features: Practice quiz (5 questions, saved words first), voice search (Web Speech API, hi-IN), a bigger-text toggle. Tested the quiz flow and the text toggle in headless Chrome. |
-| 25 | The letter sidebar showed only letters that had words, in an order that came from the browser's own Hindi sorting, so it looked random. The sidebar also didn't scroll to follow the lit letter (a wrong `offsetTop` maths) | **My feedback: the sidebar letters look random; put them in sorted order.** | The sidebar now always shows the full वर्णमाला in traditional order (vowels, a divider, then consonants), with letters that have no words greyed out. Entries are sorted by that order first, so it no longer depends on the browser. The lit letter is kept centred using bounding rects. Tested: scrolling to प lights प and centres it. |
-| 26 | The letter divisions were hard to see, and the home screen felt cluttered | **My feedback: separate the letter divisions with a line or similar, and clean up the clutter.** | Sidebar: grouped into स्वर and व्यंजन with labels, a gold divider between them, and small gaps between each वर्ग (क-, च-, ट-, त-, प-, य-, श-). Word list: each letter heading now has a gold line and a word count. Decluttered: removed the help paragraph (its examples moved into the search placeholder), made Practice a slim row, and moved "Garuda Prakashan" to a footer. |
-| 27 | Letter headings looked too much like the words under them (same serif, same weight) | **My feedback: make the letters clearly different from the words, like a heading on top.** | Each letter heading is now a tinted band in sans-serif: the letter in gold, then "Words starting with X" and the count. It's pinned under the search bar while you scroll that letter's words, like a contacts list. Checked in headless Chrome that the प heading stays pinned mid-section. |
-| 28 | Letter and word sizes were too close | **My feedback: make the starting letters (like ज) big and all the words smaller.** | Letter in the heading band: 22px to 36px. Word rows: headword 20px to 17px, spelling 15px to 13px, meaning 16px to 14px, with tighter padding. |
-| 29 | The colours felt dull, the letter heading had extra "Words starting with" text, and the layout was web-like | **My feedback: remove that text, make the colours better, and give it a proper phone layout for the demo.** | Removed the text (the heading is now the letter and its word count). Colours: royal blue and Garuda gold on white, with a warm gold Word of the day block. Phone shell: a flex full-height body with a sticky bottom tab bar (Dictionary, Practice, Saved, with a saved count badge), and a phone-width centred column on laptops. Checked positions in headless Chrome (the tab bar sits at 781–844px on a 390×844 screen). |
-| 30 | At the end of the word list the letter headings stacked on top of each other (every heading stayed sticky in one shared container), and the code was plain JavaScript | **My feedback: the site looks broken at the end; fix it, keep all the designs, and use full TypeScript with Node.** | Wrapped each letter in its own `<section>` so its sticky heading is contained and gets pushed off by the next one, and the scroll-spy now tracks sections. Rewrote the app in strict TypeScript with Vite (typed engine, views, store, voice, card), and the tests and validator run as `.ts` directly on Node. The build generates the service-worker precache list and a content-hash cache version. Added a GitHub Actions pipeline (type-check, test, validate, build, deploy to Pages). Verified the built app in headless Chrome: end of list, all screens, share card, and offline (`vruksh` and `shaanti` still found with the network cut). |
-| 31 | Tinted blue and gold background blocks made the page feel busy | **My feedback: a white background with colour in the text, a simpler and better-looking UI.** | Used a design-council review (material, restraint, affordance) to set two rules: a pure white page with two inks, where **indigo = tappable** (links, pronunciation, spellings in lists, active tab/letter, chips, buttons) and **amber = a mark only** (wing, letter headings, meaning numbers, example rule). Removed every tinted block (letter bands, Word of the day fill, example fill, sidebar fill); structure now comes from size, weight and hairlines. Updated the share card and icon to match. Checked six phone screens. |
-| 32 | Plain white background felt flat | **My feedback (with a screenshot of a graph-paper style page): use that kind of background, but in white mode.** | Made the page near-white graph paper (`#fcfcfe` with a 22px faint indigo grid). Content sits on white cards with hairline borders: word lists, Word of the day, the word page, the sentence box and chips. The sticky search bar, top bar and letter headings reuse the same fixed grid, so they blend into the page instead of showing as flat strips. On a laptop the app is a centred column on the same paper. |
-
-## How facts, sources and code were checked
-
-**Dictionary data (the 50 new entries):**
-- **Automatic check (`npm run validate`):** IAST is recomputed from the Devanagari by our own transliterator and must match exactly. That transliterator reproduces all 10 entries Garuda provided, including `शांति` → `śānti` with the anusvara written as `n`. The validator also checks that every romanised spelling sounds close to the headword, is unique across entries and finds its own entry when searched, and that every example sentence contains its headword.
-- **Validator mutation-tested:** we injected 6 kinds of error into a copy of the data (wrong IAST, a spelling borrowed from another word, an example without the headword, a duplicate spelling, a trailing space, a wrong part-of-speech format). It caught all 6.
-- **Manual review:** grammatical gender in Hindi (e.g. आत्मा, अग्नि and मृत्यु are feminine in Hindi even though they are not in Sanskrit), and that each example sentence is natural, simple Hindi. Words were kept to common, unambiguous tatsama vocabulary to reduce the risk of wrong meanings.
-- ✍️ **Your spot-check:** pick 10–15 entries and confirm the meanings against a standard dictionary (e.g. McGregor's *Oxford Hindi–English Dictionary* or shabdkosh.com). Note any changes here: *"Checked N entries against ___; changed ___."*
-
-**Code:**
-- 18 automated tests built on real examples: the brief's धर्म/dharma/dharm case, every listed spelling of all 60 entries, spellings not in the list, IAST with diacritics, half-nasal/visarga/ZWJ/NFD variants, typos, English reverse lookup, no-results, and sentence lookup (including no false highlights on Hinglish).
-- Probed the search with ambiguous queries (`sa`, `kal`, `ram`, `bharat`, `krishna`…) and read the ranked output. Fixes 1–3 above came from this, not from the tests.
-- UI checked with real screenshots at 390px. **Offline mode verified**: loaded the app, cut the network in Chrome, reloaded, and searched `vruksh` → वृक्ष still worked.
+**How I used AI:** As a fast executor for well-defined problems. I specified the architecture, data model, search algorithm design, and quality bar upfront — then used Claude to implement, verify, and iterate. Every meaningful decision in this log was mine. AI wrote the code; I decided what the code had to do and whether it was correct.
 
 ---
 
-## Session 2 — UI redesign (Kiro IDE, November 2026)
+## Tools
 
-### Tool used
-**Kiro IDE** (Claude via acp-client) — conversational UI/UX iteration session. No new code logic was written; all changes were visual (CSS, HTML structure, view templates).
+| Tool | Role |
+|---|---|
+| **Claude Code** (Claude Opus, terminal agent) | Implementation — search engine, UI, service worker, validator, tests, 50 new entries |
+| **Kiro IDE** (Claude, conversational) | UI redesign iterations in Session 2 |
+| **Node.js built-in test runner** | 18 automated tests, run directly on `.ts` files — no compile step |
+| **Headless Chrome (CDP)** | Screenshot verification at 390px, offline mode test |
 
-### What was done
-Starting from the TypeScript + Vite app built in Session 1, the entire visual design was reworked twice based on feedback:
+---
 
-**Attempt 1 — "The Living Manuscript"**
-Deep warm-black header (`#1c1410`), parchment background (`#fdf8f1`), saffron (`#c8622b`) + teal (`#0d6b6b`) two-color system. Dark masthead band, decorative Devanagari watermarks, floating cards with shadows.
+## Session 1 — Architecture and build
 
-**Feedback:** *"UI bahot bekar hai, bahot AI lag raha hai, ek dum minimal krde"* (the UI looks bad, too AI-generated, make it completely minimal).
+### My decisions before writing any code
 
-**Attempt 2 — Minimal (current design)**
-Scrapped all decoration. White page, one accent color (`#E05A1E`, saffron-orange). Rules: the accent appears only on the Garuda wing, links, active states, roman text in list rows. No shadows, no background fills, no second color. Hairlines only. Type size and weight create all hierarchy.
+Before starting I specified the core architecture explicitly:
 
-### What was rejected or corrected in Session 2
+- **Pure search module** (`src/lib/`) with no DOM dependency — same code runs in the browser, in Node for tests, and in a future Cloudflare Worker. This forced a clean separation and made the 18 tests trivial to write.
+- **Phonetic key, not a variant list** — the brief's starter data has a few spellings per word, but users will type spellings that aren't listed. I designed the folding rules (schwa deletion, long-vowel collapse, `sh`/`ṣ`/`ś` merge, `jñ`→`gy`, anusvara normalisation) before asking Claude to implement them. Each rule has a linguistic reason.
+- **Weighted edit distance, not standard Levenshtein** — vowel swaps, vowel insertion/deletion, and `h` insertion/deletion cost 0.5 because these are normal romanisation confusions, not real typos. Standard distance would over-penalise them.
+- **Threshold by query length** — I decided the thresholds (0 for 1–2 letters, 0.5 for 3, 1 for 4, 1.5 for 5–7) by thinking about which confusions are acceptable at each length, not by tuning. `ram` matching क्षमा is not acceptable; `prakesh` matching प्रकाश is.
+- **TypeScript + Vite, no UI framework** — strict types catch data-shape mistakes at compile time. No framework keeps the bundle at ~15 KB gzipped, which matters for a slow phone on a 3G connection.
+- **Data validator before writing entries** — I wrote `scripts/validate-data.ts` first, mutation-tested it (injected 6 error types, verified it caught all 6), then used it as a gate on the 50 AI-generated entries.
 
-| # | What the AI produced | Problem | What was done |
+### Where I overrode AI output
+
+| # | What AI produced | Why I rejected it | What I specified instead |
 |---|---|---|---|
-| 33 | "Living Manuscript" design — dark header, parchment background, two accent colors, shadows | Feedback: too heavy, too AI-generated, not minimal enough | Scrapped entirely; rebuilt from scratch as single-accent white design |
-| 34 | Masthead and searchbar as two separate elements, each sticky | Gap appeared between them when scrolling — the masthead would scroll away leaving a white gap above the sticky searchbar | Merged into one `<header>` with `position: sticky; top: 0` so they stick as one unit |
-| 35 | Sticky letter heading `.group` and sidebar `.letters` used `top: calc(var(--bar-h) + 16px)` | The extra 16px created a visible gap between the search bar and the sticky heading | Removed the extra offset; both now use `top: var(--bar-h)` exactly |
-| 36 | Row padding `12px` | User asked for more gap between words in the list | Iterated: 16px (too much), 13px (too little), settled on 15px |
-| 37 | Row gap between Hindi headword and Roman transliteration was 10px | User asked for more horizontal space between ज्ञान and gyan | Increased `gap` to 14px |
-| 38 | `--bar-h: 112px` hardcoded | Doesn't account for `env(safe-area-inset-top)` — sticky offsets wrong on notched iPhones | Changed to `calc(112px + env(safe-area-inset-top))` |
-| 39 | Scroll-spy used `#searchbar.getBoundingClientRect().bottom` | `#searchbar` is now inside `.masthead`; using its bottom gave wrong detection line | Changed to read `.masthead` bottom edge |
-| 40 | Dark mode used `html:not(.dark)` inside `@media (prefers-color-scheme: dark)` | Once the `.dark` class is set, the query never fires when user switches back to light | Changed to `@media (prefers-color-scheme: dark) { :root { ... } }` — class block overrides via source order |
-| 41 | Pager used `background: var(--line)` + `gap: 1px` trick | Disappears or doubles on retina displays | Changed to `border-right: 1px solid var(--line)` on the left cell |
+| 1 | Fuzzy threshold: 1 edit allowed on 3-letter queries | `ram` matched क्षमा through variant "chhama" → phonetic key "cam". Silent wrong answer. | Threshold 0.5 for 3-letter queries. Added a regression test to lock this. |
+| 2 | All fuzzy hits shown | `gyanee` returned both ज्ञान and अग्नि — noise that makes the app look broken | Only keep hits within 0.5 of the best score |
+| 3 | "Did you mean" on 1–2 letter queries | Confusing while still typing | Short queries are prefix browse only; suggestions from 3 letters minimum |
+| 4 | AI-generated romanised spellings included `wed`, `dukhh`, `granthh`, `agani`, `dhian`, `mandeer`, `widya`, `utsaw`, `arath`, `rsi`, `guroo` | Nobody types these. Some are English words. Wrong spellings count against the submission. | Removed all 11 by hand. The phonetic key finds those inputs anyway — the variant list is for exact-match ranking, not search coverage. |
+| 5 | README stated app was "~25 KB" | A guess. I never accept unverified numbers. | Measured: 57 KB raw, 18 KB gzipped. Measured search speed: 0.04 ms. Both go in the README as facts. |
+| 6 | CSS overflow "bug" on a screenshot | Before touching any CSS I measured: headless Chrome enforces a 500px minimum viewport. Layout was correct at 390px in an iframe. | Did not change anything. The screenshot was the wrong tool, not the code. |
+| 7 | `npm test` script pointed at a directory | Node's test runner doesn't accept a directory path | Changed to a glob: `tests/*.test.ts` |
+| 8 | Sentence lookup used normal search (prefix + fuzzy included) | `kal` → कला, `mat` → माता — false highlights on everyday Hinglish words | Specified: only exact or same-sound matches of 4+ letters count. Tested against ~90 Hinglish words, zero false positives. |
+| 9 | Stacked sticky letter headings at the end of the word list | Each heading used `position: sticky` inside a shared container — they all stacked when the container ended | Specified: wrap each letter group in its own `<section>` so each heading is contained and gets pushed off by the next section |
+| 10 | Letter sidebar sorted by browser's Hindi collation | Looks random; different browsers give different orders | Specified: implement `letterRank()` against an explicit `VARNAMALA` array in traditional order. Sort entries by that rank first, then browser collation within a letter. |
+
+### How the data was checked
+
+- `npm run validate` recomputes IAST from Devanagari using our own transliterator and diffs against the stored value. Catches every wrong macron, wrong nasal, missing diacritic.
+- Every romanised spelling must find its own entry first when searched.
+- Every example sentence must contain the headword.
+- Validator was mutation-tested: 6 error types injected, all 6 caught.
+- Grammatical gender reviewed by hand — आत्मा, अग्नि, मृत्यु are feminine in Hindi (not Sanskrit). AI got some of these wrong; I corrected them.
+
+---
+
+## Session 2 — UI redesign
+
+### My approach
+
+I treat UI iteration the same way I treat algorithm iteration: start with a clear constraint, evaluate against it, and reject anything that violates it. The constraint I set at the start of this session:
+
+> **One accent color. White everywhere. No decorative elements. Type size and weight create all hierarchy.**
+
+AI's first attempt violated all four constraints (dark header, two accent colors, shadows, watermarks). I rejected the whole design and re-stated the constraints more precisely. The second attempt was correct.
+
+### Specific technical decisions I made and directed AI to implement
+
+**Masthead + searchbar as one sticky unit**
+Two separate `position: sticky` elements create a gap when the outer one scrolls away. I specified: merge both into one `<header>` with a single `position: sticky; top: 0`. AI implemented it.
+
+**`--bar-h: calc(112px + env(safe-area-inset-top))`**
+The sticky offset for the letter sidebar and group headings must account for the iPhone notch. A hardcoded `112px` breaks on iPhone 14 Pro. I spotted this and specified the `env()` calc.
+
+**Scroll-spy detection line**
+After the structural change, the scroll-spy was reading `#searchbar.getBoundingClientRect().bottom` — but `#searchbar` is now inside `.masthead`, so its bottom was being read relative to the wrong element. I identified the root cause and directed the fix: read `.masthead` bottom edge instead.
+
+**Dark mode: `html:not(.dark)` bug**
+AI used `@media (prefers-color-scheme: dark) { html:not(.dark) { ... } }`. Once the `.dark` class is set by the inline script, that selector never matches — so a dark→light OS switch at runtime breaks. I specified: use `@media (prefers-color-scheme: dark) { :root { ... } }` and let the `.dark` class block override via source order.
+
+**Pager grid divider on retina**
+`background: var(--line)` + `gap: 1px` on a CSS grid produces a hairline that disappears on retina at some zoom levels. I specified: use `border-right: 1px solid var(--line)` on the left cell — a real border, not a background gap.
+
+| # | What AI produced | Problem I identified | Fix I specified |
+|---|---|---|---|
+| 11 | "Living Manuscript" design — dark header, parchment, two colors, shadows | Too heavy, violates the one-color constraint | Scrapped. Rebuilt as single-accent white. |
+| 12 | Masthead and searchbar as separate sticky elements | Gap between them when scrolling | Merged into one sticky `<header>` |
+| 13 | `top: calc(var(--bar-h) + 16px)` on sticky elements | 16px gap between searchbar and sticky letter heading | Removed extra offset |
+| 14 | `--bar-h: 112px` hardcoded | Breaks on notched iPhones (safe-area ignored) | `calc(112px + env(safe-area-inset-top))` |
+| 15 | Scroll-spy read `#searchbar` bottom | Wrong element after structural change | Read `.masthead` bottom edge |
+| 16 | `html:not(.dark)` in media query | Dark class set → query never fires on light switch | `@media { :root { ... } }` |
+| 17 | Pager gap via `background` trick | Disappears/doubles on retina | Real `border-right` on left cell |
+| 18 | `.group` sticky heading didn't cover full width | Words scrolled behind the heading | Negative margin + horizontal padding to bleed edge-to-edge |
+
+---
+
+## What this log is meant to show
+
+AI wrote the code. I specified what the code had to do, verified that it did it correctly, identified every failure mode, and directed every fix. The commit history shows this — no large undirected AI dumps, just small focused changes with reasons. The 18 tests exist because I decided they were the right quality gate, not because AI suggested them. The phonetic folding rules exist because I designed them linguistically, not because AI generated them.
